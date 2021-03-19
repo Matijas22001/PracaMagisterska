@@ -1,0 +1,254 @@
+[
+  {
+    "id": 1,
+    "pathId": "Function-A-Line-1",
+    "object": [
+      {
+        "id": 1,
+        "elementID": "0",
+        "oneClick": "Wykres A",
+        "doubleClick": "Minus nieskończoność do punktu A"
+      },
+      {
+        "id": 2,
+        "elementID": "1",
+        "oneClick": "",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "pathId": "Function-A-Line-2",
+    "object": [
+      {
+        "id": 3,
+        "elementID": "0",
+        "oneClick": "Wykres A",
+        "doubleClick": "Od punktu A do punktu B"
+      },
+      {
+        "id": 4,
+        "elementID": "1",
+        "oneClick": "",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "pathId": "Function-A-Line-3",
+    "object": [
+      {
+        "id": 5,
+        "elementID": "0",
+        "oneClick": "Wykres A",
+        "doubleClick": "Od punktu B do plus nieskończoności"
+      },
+      {
+        "id": 6,
+        "elementID": "1",
+        "oneClick": "",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "pathId": "Function-A-Point-1",
+    "object": [
+      {
+        "id": 7,
+        "elementID": "0",
+        "oneClick": "Punkt X: -3 Y 3",
+        "doubleClick": ""
+      },
+      {
+        "id": 8,
+        "elementID": "1",
+        "oneClick": "",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "pathId": "Function-A-Point-2",
+    "object": [
+      {
+        "id": 9,
+        "elementID": "0",
+        "oneClick": "Punkt X: 0 Y 6",
+        "doubleClick": ""
+      },
+      {
+        "id": 10,
+        "elementID": "1",
+        "oneClick": "",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "pathId": "Function-B-Line-1",
+    "object": [
+      {
+        "id": 11,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 12,
+        "elementID": "1",
+        "oneClick": "Prosta między punktem A oraz B",
+        "doubleClick": "Długość 5"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "pathId": "Function-B-Line-2",
+    "object": [
+      {
+        "id": 13,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 14,
+        "elementID": "1",
+        "oneClick": "Prosta między punktem B oraz C",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "pathId": "Function-B-Line-3",
+    "object": [
+      {
+        "id": 15,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 16,
+        "elementID": "1",
+        "oneClick": "Prosta między punktem C oraz D",
+        "doubleClick": "Długość 2"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "pathId": "Function-B-Line-4",
+    "object": [
+      {
+        "id": 17,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 18,
+        "elementID": "1",
+        "oneClick": "Prosta między punktem D oraz E",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "pathId": "Function-B-Point-1",
+    "object": [
+      {
+        "id": 19,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 20,
+        "elementID": "1",
+        "oneClick": "Punkt X -3 Y -2",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "pathId": "Function-B-Point-2",
+    "object": [
+      {
+        "id": 21,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 22,
+        "elementID": "1",
+        "oneClick": "Punkt X 2 Y -2",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "pathId": "Function-B-Point-3",
+    "object": [
+      {
+        "id": 23,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 24,
+        "elementID": "1",
+        "oneClick": "Punkt X 6 Y 2",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "pathId": "Function-B-Point-4",
+    "object": [
+      {
+        "id": 25,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 26,
+        "elementID": "1",
+        "oneClick": "Punkt X 8 Y 2",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "pathId": "Function-B-Point-5",
+    "object": [
+      {
+        "id": 26,
+        "elementID": "0",
+        "oneClick": "",
+        "doubleClick": ""
+      },
+      {
+        "id": 27,
+        "elementID": "1",
+        "oneClick": "Punkt X 10 Y 0",
+        "doubleClick": ""
+      }
+    ]
+  }
+]

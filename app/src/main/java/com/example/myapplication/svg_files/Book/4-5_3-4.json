@@ -1,0 +1,158 @@
+[
+  {
+    "id": 1,
+    "pathId": "4-5-3-line-1",
+    "object": [
+      {
+        "id": 1,
+        "elementID": "0",
+        "oneClick": "Prosta w przedziale minus nieskończoność minus trzy. Y równy dwa",
+        "doubleClick": "Przedział prawostronnie otwarty"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "pathId": "4-5-3-point-1",
+    "object": [
+      {
+        "id": 10,
+        "elementID": "0",
+        "oneClick": "X minus trzy, Y dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "pathId": "4-5-3-line-2",
+    "object": [
+      {
+        "id": 3,
+        "elementID": "0",
+        "oneClick": "Prosta w przedziale X minus trzy Y trzy oraz X trzy Y minus trzy",
+        "doubleClick": "Przedział obustronnie zamknięty"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "pathId": "4-5-3-point-2",
+    "object": [
+      {
+        "id": 4,
+        "elementID": "0",
+        "oneClick": "X minus trzy Y cztery",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "pathId": "4-5-3-point-3",
+    "object": [
+      {
+        "id": 5,
+        "elementID": "0",
+        "oneClick": "X trzy Y minus dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "pathId": "4-5-3-point-4",
+    "object": [
+      {
+        "id": 13,
+        "elementID": "0",
+        "oneClick": "X trzy Y dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "pathId": "4-5-3-line-3",
+    "object": [
+      {
+        "id": 6,
+        "elementID": "0",
+        "oneClick": "Prosta w przedziale X trzy, Y dwa do plus nieskończoności",
+        "doubleClick": "Przedział lewostronnie otwarty"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "pathId": "4-5-4-line-1",
+    "object": [
+      {
+        "id": 7,
+        "elementID": "1",
+        "oneClick": "Prosta funkcji f w przedziale X minus nieskończoność minus jeden",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "pathId": "4-5-4-line-2",
+    "object": [
+      {
+        "id": 8,
+        "elementID": "1",
+        "oneClick": "Prosta funkcji f w przedziale X minus jeden do jeden",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "pathId": "4-5-4-line-3",
+    "object": [
+      {
+        "id": 9,
+        "elementID": "1",
+        "oneClick": "Prosta funkcji f w przedziale X jeden do plus nieskończoności",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "pathId": "4-5-4-point-1",
+    "object": [
+      {
+        "id": 10,
+        "elementID": "1",
+        "oneClick": "X minus jeden, Y zero",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "pathId": "4-5-4-point-2",
+    "object": [
+      {
+        "id": 11,
+        "elementID": "1",
+        "oneClick": "X jeden, Y minus dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "pathId": "4-5-4-point-3",
+    "object": [
+      {
+        "id": 12,
+        "elementID": "1",
+        "oneClick": "Miejsce zerowe, X trzy, Y zero",
+        "doubleClick": ""
+      }
+    ]
+  }
+]

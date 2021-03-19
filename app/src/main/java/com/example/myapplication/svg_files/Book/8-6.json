@@ -1,0 +1,194 @@
+[
+  {
+    "id": 1,
+    "pathId": "8-6-line-1",
+    "object": [
+      {
+        "id": 1,
+        "elementID": "0",
+        "oneClick": "Prosta A",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "pathId": "8-6-line-2",
+    "object": [
+      {
+        "id": 10,
+        "elementID": "0",
+        "oneClick": "Prosta B",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "pathId": "8-6-line-3",
+    "object": [
+      {
+        "id": 3,
+        "elementID": "0",
+        "oneClick": "Prosta C",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "pathId": "8-6-line-4",
+    "object": [
+      {
+        "id": 4,
+        "elementID": "0",
+        "oneClick": "Prosta D",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "pathId": "8-6-point-1",
+    "object": [
+      {
+        "id": 5,
+        "elementID": "0",
+        "oneClick": "X minus jeden, Y minus cztery",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "pathId": "8-6-point-2",
+    "object": [
+      {
+        "id": 6,
+        "elementID": "0",
+        "oneClick": "X zero Y zero",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "pathId": "8-6-point-3",
+    "object": [
+      {
+        "id": 7,
+        "elementID": "0",
+        "oneClick": "X jeden Y cztery",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "pathId": "8-6-point-4",
+    "object": [
+      {
+        "id": 8,
+        "elementID": "0",
+        "oneClick": "X minus dwa Y minus cztery",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "pathId": "8-6-point-5",
+    "object": [
+      {
+        "id": 9,
+        "elementID": "0",
+        "oneClick": "X zero Y minus dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "pathId": "8-6-point-6",
+    "object": [
+      {
+        "id": 10,
+        "elementID": "0",
+        "oneClick": "X dwa Y zero",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "pathId": "8-6-point-7",
+    "object": [
+      {
+        "id": 11,
+        "elementID": "0",
+        "oneClick": "X minus dwa Y dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "pathId": "8-6-point-8",
+    "object": [
+      {
+        "id": 12,
+        "elementID": "0",
+        "oneClick": "X zero Y zero",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "pathId": "8-6-point-9",
+    "object": [
+      {
+        "id": 13,
+        "elementID": "0",
+        "oneClick": "X dwa Y minus dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "pathId": "8-6-point-10",
+    "object": [
+      {
+        "id": 14,
+        "elementID": "0",
+        "oneClick": "X minus dwa Y minus dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "pathId": "8-6-point-11",
+    "object": [
+      {
+        "id": 15,
+        "elementID": "0",
+        "oneClick": "X zero Y minus dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "pathId": "8-6-point-12",
+    "object": [
+      {
+        "id": 16,
+        "elementID": "0",
+        "oneClick": "X dwa Y minus dwa",
+        "doubleClick": ""
+      }
+    ]
+  }
+]

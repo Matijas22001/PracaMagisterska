@@ -1,0 +1,18 @@
+<svg _ngcontent-igl-c8="" xmlns:xlink="http://www.w3.org/1999/xlink" class="svg-border mt-0" height="100%" id="svg" version="1.2" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <script type="application/ecmascript">
+        <![CDATA[
+    function onClickEvent(evt) {
+        Android.showDetail(evt.target.getAttribute("id"));
+    }
+  ]]>
+    </script>
+    <path onclick="onClickEvent(evt)" id="0" d="M69,224L340,226Z" stroke-width="14px" stroke="orange" class="path-style"/>
+    <path onclick="onClickEvent(evt)" id="1" d="M70,275L340,172Z" stroke="orange" stroke-width="14px" class="path-style"/>
+    <path onclick="onClickEvent(evt)" id="7" d="M279,135Q121,310,121,310" stroke="orange" stroke-width="14px" class="path-style"/>
+    <path onclick="onClickEvent(evt)" id="8" d="M175,255Q210,261,238,228" stroke="orange" stroke-width="14px" class="path-style"/>
+    <path onclick="onClickEvent(evt)" id="9" d="M157,225Q179,195,227,195" stroke="orange" stroke-width="14px" class="path-style"/>
+    <path onclick="onClickEvent(evt)" id="20" d="M248,206Q244,193,233,188" stroke="orange" stroke-width="14px" class="path-style"/>
+    <path onclick="onClickEvent(evt)" id="21" d="M251,208Q257,215,254,227" stroke="orange" stroke-width="14px" class="path-style"/>
+    <path onclick="onClickEvent(evt)" id="22" d="M145,250Q150,256,165,262" stroke-width="14px" stroke="orange" class="path-style"/>
+    <path onclick="onClickEvent(evt)" id="23" d="M143,246Q130,234,137,225" stroke="orange" stroke-width="14px" class="path-style"/>
+</svg>

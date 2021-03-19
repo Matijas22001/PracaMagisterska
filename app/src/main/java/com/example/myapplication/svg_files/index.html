@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+
+
+$(document).ready(function(){
+        $('object').on("click", function(){
+            jsondata.returnPathId($(this).attr('id'));
+        });
+});
+
+
+function loadURL(url){
+    $('#main').html('<object data="'+url+'" type="image/svg+xml">');
+}
+
+
+
+</script>
+</head>
+
+<body>
+
+
+<div  id="main">
+</div>
+
+
+</div>
+</body>
+
+</html>

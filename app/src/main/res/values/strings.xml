@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_projects">Projects</string>
+    <string name="menu_devices">Devices</string>
+    <string name="menu_send_opinion">Send opinion</string>
+    <string name="menu_send_bug">Send problem</string>
+    <string name="menu_create">Create new project</string>
+    <string name="menu_create_new_project">Create new project</string>
+    <string name="fragment_create_new_project_button_save_project">Save</string>
+    <string name="fragment_create_new_project_button_load_project">Load</string>
+    <string name="fragment_create_new_project_button_clear_project">Clear</string>
+    <string name="fragment_home_image_button_geometry">Geometria</string>
+    <string name="Button_Learning_Mode">Wejdź w tryb nauki</string>
+    <string name="Button_Back_To_Menu">Wróć do menu głównego</string>
+
+    <string name="exit">Wyjdź z aplikacji</string>
+    <string name="button_home_back">COFNIJ</string>
+    <string name="button_home_previous">POPRZEDNI</string>
+    <string name="button_home_next">NASTĘPNY</string>
+    <string name="button_home_select">WYBIERZ</string>
+    <string name="button_home_T">OBECNY MODUŁ</string>
+    <string name="button_home_settings">OPCJE</string>
+    <string name="button_confirm">ZATWIERDŹ</string>
+    <string name="No_Files_Go_Back">BRAK PLIKÓW, PROSZĘ COFNĄĆ</string>
+
+    <string name="CHOOSED">Wybrano</string>
+    <string name="CURRENT_MODULE">Obecny moduł</string>
+    <string name="LAUNCH_MODULE">Uruchomiono moduł</string>
+
+    <string name="OPTIONS">Opcje</string>
+    <string name="CHOOSE_USER">Wybór użytkownika</string>
+    <string name="MAIN_MENU_WITH_EXERCISES">Główny katalog z zadaniami</string>
+
+    <string name="CHANGE_SPEECH_SPEED">Zmiana prędkości mowy</string>
+    <string name="EXIT_FROM_APPLICATION">Wyjdź z aplikacji</string>
+    <string name="LIST_OF_EXERCISES">Lista zadań</string>
+    <string name="QUESTION">Pytanie</string>
+    <string name="LIST_OF_TESTS">Lista testów</string>
+    <string name="EXIT_MODULE">Opuszczono moduł</string>
+    <string name="CHANGE_SVG_STROKE_WIDTH">Zmiana grubości linii</string>
+    <string name="CHANGE_SVG_RADIUS">Zmiana wielkości promienia</string>
+</resources>

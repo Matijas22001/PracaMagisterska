@@ -1,0 +1,309 @@
+<Test xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <StudentID>0</StudentID>
+    <StudentName />
+    <StudentNotes />
+    <Start xsi:nil="true" />
+    <End xsi:nil="true" />
+    <ID>1</ID>
+    <Name>Zadanie_4.5_s.19_pod.a_stopień_rozszerzony </Name>
+    <Description>Test rozszerzony</Description>
+    <NumberOfQuestions>8</NumberOfQuestions>
+    <MaxPoints>8</MaxPoints>
+    <PictureId>17</PictureId>
+    <Questions>
+        <Question>
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Definicją funkcji nazywamy</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcją nazywamy przyporządkowanie każdemu elementowi jednego zbioru dokładnie jednego elementu drugiego zbioru. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcją nazywamy przyporządkowanie elementowi jednego zbioru wielu elementów drugiego zbioru. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcją nazywamy zbiór elementów. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question>
+            <Id>2</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Dziedzina funkcji</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Jest to argument funkcji. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Jest to zbiór wszystkich wartości funkcji. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Jest to zbiór wszystkich argumentów funkcji. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question>
+            <Id>3</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Przeciwdziedziną dla przedstawionej funkcji jest </Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Zakres wartości od -2 do 2. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Zakres wartości od -6 do -3. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Zakres wartości od -3 do 4. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Zakres wartości od -6 do 4. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question>
+            <Id>4</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Jaka jest wartość funkcji dla x = 0 </Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>2</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>–2</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>0</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja nie posiada miejsca zerowego. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question>
+            <Id>5</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Jakie rodzaje przedziałów funkcji występują w zadaniu </Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Lewostronnie domknięty. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Prawostronnie otwarty. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Lewostronnie otwarty. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.5</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Prawostronnie domknięty. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.5</Points>
+                </Answer>
+                <Answer>
+                    <Id>5</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Obustronnie otwarty. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>6</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Obustronnie domknięty. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question>
+            <Id>6</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Przedziały funkcji przedstawionej w zadaniu </Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja jest malejąca w przedziale od –6 do –3. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja jest stała w całym zakresie. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja jest rosnąca w przedziale od –2 do 2. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja jest rosnąca w przedziale od –6 do –3.    </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question>
+            <Id>7</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Monotoniczność funkcji oznacza, że</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja jest nieskończona. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja nie posiada miejsca zerowego. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja jest rosnąca. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.3333333333333333</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja jest malejąca. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.3333333333333333</Points>
+                </Answer>
+                <Answer>
+                    <Id>5</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja posiada miejsce zerowe. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>6</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Funkcja jest stała. </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.3333333333333333</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question>
+            <Id>8</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Wzór funkcji przedstawionej w zadaniu ma wartości </Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>2 dla przedziału prawostronnie domkniętego od minus nieskończoności do –3 oraz -2 dla przedziału lewostronnie otwartego od –3 do plus nieskończoności.</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>2 dla przedziału od minus nieskończoności do plus nieskończoności. </Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>-2 dla przedziału prawostronnie domkniętego od minus nieskończoności do –3 oraz 2 dla przedziału lewostronnie otwartego od –3 do plus nieskończoności.</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>2 dla przedziału prawostronnie otwartego od minus nieskończoności do –3 oraz -2 dla przedziału lewostronnie domkniętego od –3 do plus nieskończoności.</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+    </Questions>
+</Test>

@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "pathId": "4-5-1-line-1",
+    "object": [
+      {
+        "id": 1,
+        "elementID": "0",
+        "oneClick": "Półprosta - przedział zamknięty prawostronnie. X minus nieskończoność do minus trzy",
+        "doubleClick": "Półprosta - Y równy dwa"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "pathId": "4-5-1-line-2",
+    "object": [
+      {
+        "id": 10,
+        "elementID": "0",
+        "oneClick": "Półprosta - przedział lewostronnie otwarty. X minus trzy do nieskończonośi",
+        "doubleClick": "Y równy minus dwa"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "pathId": "4-5-1-point-1",
+    "object": [
+      {
+        "id": 3,
+        "elementID": "0",
+        "oneClick": "Punkt X minus trzy oraz Y dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "pathId": "4-5-1-point-2",
+    "object": [
+      {
+        "id": 4,
+        "elementID": "0",
+        "oneClick": "Punkt X minus trzy oraz Y minus dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "pathId": "4-5-2-line-1",
+    "object": [
+      {
+        "id": 5,
+        "elementID": "1",
+        "oneClick": "Prosta w przedziale X minus nieskończoność dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "pathId": "4-5-2-line-2",
+    "object": [
+      {
+        "id": 6,
+        "elementID": "1",
+        "oneClick": "Prosta w przedziale X dwa do plus nieskończoności",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "pathId": "4-5-2-point-1",
+    "object": [
+      {
+        "id": 7,
+        "elementID": "1",
+        "oneClick": "Punkt X dwa oraz Y dwa",
+        "doubleClick": ""
+      }
+    ]
+  }
+]

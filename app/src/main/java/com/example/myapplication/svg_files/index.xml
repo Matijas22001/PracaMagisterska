@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<IndexStructure>
+    <Directory id="directory-1" parentId="" name="Matematyka"/>
+    <Directory id="directory-2" parentId="" name="Podręcznik z matematyki"/>
+        <File id="4-5_1-2.svg" parentId="directory-2" name="Rozdział 4. - Zadanie 4. kropka 5 podpunkt a b"/>
+        <File id="4-5_3-4.svg" parentId="directory-2" name="Rozdział 4. - Zadanie 4. kropka 5 podpunkt c d"/>
+        <File id="4-13.svg" parentId="directory-2" name="Rozdział 4. - Zadanie 4. kropka 13"/>
+        <File id="7-2.svg" parentId="directory-2" name="Rozdział 7 - Podsumowanie - Zadanie 2."/>
+        <File id="7-6.svg" parentId="directory-2" name="Rozdział 7 - Podsumowanie - Zadanie 6."/>
+        <File id="8-6.svg" parentId="directory-2" name="Rozdział 8 - Zadanie 2."/>
+    <Directory id="directory-3" parentId="directory-1" name = "Wykresy"/>
+        <File id="106.svg" parentId="directory-3" name="Zadanie - Funckje proste"/>
+        <File id="107.svg" parentId="directory-3" name="Zadanie - Parabole"/>
+    <File id="11.svg" parentId="" name="11"/>
+    <File id="109.svg" parentId="" name="109"/>
+    <File id="17.svg" parentId="" name="Zadanie 17"/>
+    <File id="18.svg" parentId="" name="Zadanie 18"/>
+</IndexStructure>

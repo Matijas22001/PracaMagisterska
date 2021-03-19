@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "pathId": "7-2-line-1",
+    "object": [
+      {
+        "id": 1,
+        "elementID": "0",
+        "oneClick": "Prosta 1",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "pathId": "7-2-line-2",
+    "object": [
+      {
+        "id": 10,
+        "elementID": "0",
+        "oneClick": "Prosta 2",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "pathId": "7-2-point-1",
+    "object": [
+      {
+        "id": 3,
+        "elementID": "0",
+        "oneClick": "X minus cztery Y zero",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "pathId": "7-2-point-2",
+    "object": [
+      {
+        "id": 4,
+        "elementID": "0",
+        "oneClick": "X minus jeden Y dwa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "pathId": "7-2-point-3",
+    "object": [
+      {
+        "id": 5,
+        "elementID": "0",
+        "oneClick": "X zero Y zero",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "pathId": "7-2-point-4",
+    "object": [
+      {
+        "id": 13,
+        "elementID": "0",
+        "oneClick": "X pięć, Y zero",
+        "doubleClick": ""
+      }
+    ]
+  }
+]

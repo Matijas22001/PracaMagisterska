@@ -1,0 +1,29 @@
+<Test xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <StudentID>10</StudentID>
+    <StudentName>To_Ja_Android_:3</StudentName>
+    <StudentNotes />
+    <Start xsi:nil="true" />
+    <End xsi:nil="true" />
+    <ID>1</ID>
+    <Name>string</Name>
+    <Description>string</Description>
+    <NumberOfQuestions>1</NumberOfQuestions>
+    <MaxPoints>1</MaxPoints>
+    <Questions>
+        <Question>
+            <Id>0</Id>
+            <PictureId>0</PictureId>
+            <MaxPoints>1</MaxPoints>
+            <Name>string</Name>
+            <Answers>
+                <Answer>
+                    <Id>0</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>string</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+            </Answers>
+        </Question>
+    </Questions>
+</Test>

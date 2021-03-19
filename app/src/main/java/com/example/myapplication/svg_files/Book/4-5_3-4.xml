@@ -1,0 +1,85 @@
+<Test xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <StudentID>0</StudentID>
+    <StudentName />
+    <StudentNotes />
+    <Start xsi:nil="true" />
+    <End xsi:nil="true" />
+    <ID>1</ID>
+    <Name>Wykres</Name>
+    <Description>Wykres Rafałka</Description>
+    <NumberOfQuestions>1</NumberOfQuestions>
+    <MaxPoints>1</MaxPoints>
+    <PictureId>452</PictureId>
+    <Questions>
+        <Question title="Pytanie pierwsze">
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Podaj wzór funkcji przedstawionej na wykresie po lewej stronie</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Opcja pierwsza</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Opcja druga</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Opcja trzecia</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Opcja czwarta</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question title="Pytanie drugie">
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Podaj wzór funkcji przedstawionej na wykresie po prawej stronie</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Opcja pierwsza</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Opcja druga</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Opcja trzecia</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Opcja czwarta</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+    </Questions>
+</Test>

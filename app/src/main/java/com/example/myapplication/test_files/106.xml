@@ -1,0 +1,85 @@
+<Test>
+    <StudentID>0</StudentID>
+    <StudentName />
+    <StudentNotes />
+    <Start/>
+    <End/>
+    <ID>1</ID>
+    <Name>Wykres</Name>
+    <Description>Wykres Rafałka</Description>
+    <NumberOfQuestions>1</NumberOfQuestions>
+    <MaxPoints>1</MaxPoints>
+    <PictureId>100</PictureId>
+    <Questions>
+        <Question title="Pytanie pierwsze">
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Jaki jest przedział funkcji A</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Minus nieskończoność do plus nieskończoność</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Minus trzy do zera</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Od zera do nieskończoności</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Od nieskończoności do minus trzy</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question title="Pytanie drugie">
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Wykres funkcji B składa się z czterech odcinków o punktach. Jaka jest funkcja odcinka pomiędzy punktami B i C</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Iks plus cztery</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Dwa iks</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>niewybrano</Status>
+                    <Description>iks minus pięć</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Żadne z powyższych</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+    </Questions>
+</Test>

@@ -1,0 +1,50 @@
+<Test xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <StudentID>0</StudentID>
+    <StudentName />
+    <StudentNotes />
+    <Start xsi:nil="true" />
+    <End xsi:nil="true" />
+    <ID>1</ID>
+    <Name>Wykres</Name>
+    <Description>Wykres Rafałka</Description>
+    <NumberOfQuestions>1</NumberOfQuestions>
+    <MaxPoints>1</MaxPoints>
+    <PictureId>76</PictureId>
+    <Questions>
+        <Question title="Zadanie pierwsze">
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>Napisz układ równań, którego uinterpretację graficzną przedstawiono na rysunku</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Prosta 1: minus dwa x plus trzy oraz Prosta 2: jedna druga x minus 2</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Prosta 1: minus x plus trzy oraz Prosta 2: x minus 2</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Prosta 1: dwa x plus dziesięć oraz Prosta 2: x minus 5</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Prosta 1: minus pięć x plus jeden oraz Prosta 2: trzy drugie x minus 2</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+    </Questions>
+</Test>

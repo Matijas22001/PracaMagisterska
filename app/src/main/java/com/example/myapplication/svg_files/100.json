@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "pathId": "1",
+    "object": [
+      {
+        "id": 1,
+        "elementID": "0",
+        "oneClick": "Okrąg",
+        "doubleClick": "Okrąg o promieniu 5 centymetrów"
+      },
+      {
+        "id": 9,
+        "elementID": "1",
+        "oneClick": "Okrąg-pytanie drugie",
+        "doubleClick": "Okrągelek"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "pathId": "2",
+    "object": [
+      {
+        "id": 10,
+        "elementID": "0",
+        "oneClick": "Czworokąt",
+        "doubleClick": "Czworokąt wpisany w okrąg"
+      },
+      {
+        "id": 2,
+        "elementID": "1",
+        "oneClick": "Czworokąt pytanie drugie",
+        "doubleClick": "Czworokąt"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "pathId": "3",
+    "object": [
+      {
+        "id": 3,
+        "elementID": "0",
+        "oneClick": "Kąt sto sześdziesiąt stopni",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "pathId": "4",
+    "object": [
+      {
+        "id": 4,
+        "elementID": "0",
+        "oneClick": "Alfa",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "pathId": "5",
+    "object": [
+      {
+        "id": 5,
+        "elementID": "0",
+        "oneClick": "Punkt A",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "pathId": "6",
+    "object": [
+      {
+        "id": 6,
+        "elementID": "0",
+        "oneClick": "Punkt B",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "pathId": "7",
+    "object": [
+      {
+        "id": 7,
+        "elementID": "0",
+        "oneClick": "Punkt C",
+        "doubleClick": ""
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "pathId": "8",
+    "object": [
+      {
+        "id": 8,
+        "elementID": "0",
+        "oneClick": "Punkt O",
+        "doubleClick": ""
+      }
+    ]
+  }
+]

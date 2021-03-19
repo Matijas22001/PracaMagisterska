@@ -1,0 +1,120 @@
+<Test xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <StudentID>0</StudentID>
+    <StudentName />
+    <StudentNotes />
+    <Start xsi:nil="true" />
+    <End xsi:nil="true" />
+    <ID>1</ID>
+    <Name>Wykres</Name>
+    <Description>Wykres Rafałka</Description>
+    <NumberOfQuestions>1</NumberOfQuestions>
+    <MaxPoints>1</MaxPoints>
+    <PictureId>452</PictureId>
+    <Questions>
+        <Question title="Zadanie pierwsze - Wyznacz współczynniki a i b we wzorze funkcji f w taki sposób, aby wzór określał funkcję przedstawioną na rysunku">
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>f od x równa się a x plus b dla przedziału x minus nieskończoność minus cztery</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Minus jedna druga x plus cztery</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Jedna druga x</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>niewybrano</Status>
+                    <Description>X równa 3, Y minus nieskończoność do plus nieskończoność</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Ukryta opcja czwarta</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question title="Zadanie drugie - Wyznacz współczynniki a i b we wzorze funkcji f w taki sposób, aby wzór określał funkcję przedstawioną na rysunku">
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>f od x równa się a x dla przedziału x minus cztery dwa</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Minus iks drugich</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Minus iks trzecich</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Minus iks czwartych</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Jeden</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+        <Question title="Zadanie trzecie - Wyznacz współczynniki a i b we wzorze funkcji f w taki sposób, aby wzór określał funkcję przedstawioną na rysunku">
+            <Id>1</Id>
+            <MaxPoints>1</MaxPoints>
+            <Name>f od x równa się 4 a x minus b minus 1 dla przedziału x dwa do plus nieskończoności</Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Dwa x minus pięć</Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>1</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Trzy x minus sześć</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Cztery x minus siedem</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>niewybrano</Status>
+                    <Description>Pięć x minus osiem</Description>
+                    <IsCorrect>false</IsCorrect>
+                    <Points>0</Points>
+                </Answer>
+            </Answers>
+        </Question>
+    </Questions>
+</Test>

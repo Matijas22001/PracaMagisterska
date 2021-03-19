@@ -1,0 +1,62 @@
+<Test xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <StudentID>0</StudentID>
+    <StudentName />
+    <StudentNotes />
+    <Start xsi:nil="true" />
+    <End xsi:nil="true" />
+    <ID>1</ID>
+    <Name>Funkcje</Name>
+    <Description>Zbiór zadań tematu funkcje, obejmujący odczytywanie własności funkcji na podstawie
+        jej wykresu
+    </Description>
+    <NumberOfQuestions>1</NumberOfQuestions>
+    <MaxPoints>1</MaxPoints>
+    <Questions>
+        <Question>
+            <Id>1</Id>
+            <PictureId>0</PictureId>
+            <MaxPoints>1</MaxPoints>
+            <Name>Podaj rozwiązania równania f(x) = g(x) oraz rozwiązania nierówności f(x) &lt; g(x)
+                i f(x) &gt; g(x)
+            </Name>
+            <Answers>
+                <Answer>
+                    <Id>1</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Równanie f(x) = g(x) równa się ..., Nierówność f(x) &lt; g(x) równa
+                        się ...., a nierówność f(x) &gt; g(x)
+                    </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.25</Points>
+                </Answer>
+                <Answer>
+                    <Id>2</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Równanie f(x) = g(x) równa się ..., Nierówność f(x) &lt; g(x) równa
+                        się ...., a nierówność f(x) &gt; g(x)
+                    </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.25</Points>
+                </Answer>
+                <Answer>
+                    <Id>3</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Równanie f(x) = g(x) równa się ..., Nierówność f(x) &lt; g(x) równa
+                        się ...., a nierówność f(x) &gt; g(x)
+                    </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.25</Points>
+                </Answer>
+                <Answer>
+                    <Id>4</Id>
+                    <Status>wybrane/niewybrane</Status>
+                    <Description>Równanie f(x) = g(x) równa się ..., Nierówność f(x) &lt; g(x) równa
+                        się ...., a nierówność f(x) &gt; g(x)
+                    </Description>
+                    <IsCorrect>true</IsCorrect>
+                    <Points>0.25</Points>
+                </Answer>
+            </Answers>
+        </Question>
+    </Questions>
+</Test>
