@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.CustomAdapter
 import com.example.myapplication.adapters.UserListAdapter
@@ -27,7 +28,7 @@ import dagger.android.AndroidInjection
 import javax.inject.Inject
 
 class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, ChooseSubjectActivityNavigator {
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private lateinit var linearLayoutManager: LinearLayoutManager
     private var subjectList: ArrayList<String> = ArrayList()
     private var clickCountBack = 0
@@ -51,7 +52,7 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
         setContentView(R.layout.subjects)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         mockInicializeLists()
         initializeRecyclerView()

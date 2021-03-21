@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.CustomAdapter
 import com.example.myapplication.ui.chooseTaskActivity.ChooseTaskActivity
@@ -26,7 +27,7 @@ import javax.inject.Inject
 class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseImageSizeNavigator {
 
     private lateinit var linearLayoutManager: LinearLayoutManager
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
@@ -49,13 +50,15 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
         setContentView(R.layout.choose_image_size)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
+        if(AppPreferences.chosenImageThickness != -1) currentlyChosenSizeID = AppPreferences.chosenImageThickness
         mockInicializeLists()
         initializeRecyclerView()
     }
 
     private fun initializeRecyclerView(){
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór grubości linii")
         linearLayoutManager = LinearLayoutManager(this)
         sizeRecyclerView.layoutManager = linearLayoutManager
         stringAdapter = CustomAdapter(sizeList)
@@ -129,6 +132,7 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
                     2 -> {
                         textToSpeechSingleton?.speakSentence("Wybrany rozmiar to $chosenSize")
                         AppPreferences.chosenImageSize = Integer.parseInt(chosenSize?.split(" ")?.get(1).toString())
+                        AppPreferences.chosenImageThickness = currentlyChosenSizeID
                         val myIntent = Intent(this@ChooseImageSizeActivity, ShowSvgActivity::class.java)
                         this@ChooseImageSizeActivity.startActivity(myIntent)
                         finish()

@@ -8,5 +8,5 @@ class ChosenAnswersForTest: Serializable {
     var testId: Int? = null
 
     @SerializedName("ListOfQuestions")
-    var answerId: ArrayList<ChosenAnswersForQuestion>? = null
+    var listOfQuestions: ArrayList<ChosenAnswersForQuestion>? = null
 }

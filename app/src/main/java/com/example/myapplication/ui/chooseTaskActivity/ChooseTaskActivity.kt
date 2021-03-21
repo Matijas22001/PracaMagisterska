@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.CustomAdapter
 import com.example.myapplication.helper_data_containers.ImageIdTestsForImage
@@ -31,7 +32,7 @@ import javax.inject.Inject
 class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigator {
 
     private lateinit var linearLayoutManager: LinearLayoutManager
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
@@ -60,14 +61,16 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         setContentView(R.layout.choose_task)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
+        if(AppPreferences.chosenTaskId != -1) currentlyChosenTaskID = AppPreferences.chosenTaskId
         inicializeList()
         initializeRecyclerView()
     }
 
     private fun initializeRecyclerView(){
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór zadania")
         linearLayoutManager = LinearLayoutManager(this)
         taskRecyclerView.layoutManager = linearLayoutManager
         stringAdapter = CustomAdapter(taskList)
@@ -77,6 +80,8 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         stringAdapter?.notifyDataSetChanged()
         chosenTask = stringAdapter?.getItem(currentlyChosenTaskID)
     }
+
+
 
     @OnClick(R.id.btn_back)
     fun goBack(){
@@ -143,6 +148,7 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
                         AppPreferences.chosenTask = Gson().toJson(getCurrentTask(chosenTask!!))
                         AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(getCurrentTask(chosenTask!!)?.svgId!!))
                         AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(getCurrentTask(chosenTask!!)?.svgId!!))
+                        AppPreferences.chosenTaskId = currentlyChosenTaskID
                         val myIntent = Intent(this@ChooseTaskActivity, ChooseImageSizeActivity::class.java)
                         this@ChooseTaskActivity.startActivity(myIntent)
                         finish()

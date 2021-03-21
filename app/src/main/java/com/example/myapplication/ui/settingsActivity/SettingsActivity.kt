@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.CustomAdapter
 import com.example.myapplication.utils.AppPreferences
@@ -21,7 +22,7 @@ import kotlin.math.round
 class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
 
     private lateinit var linearLayoutManager: LinearLayoutManager
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
@@ -46,13 +47,14 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
         mockInicializeLists()
         initializeRecyclerView()
         textToSpeechSingleton?.speakSentence("Obecny moduł opcje")
     }
 
     private fun initializeRecyclerView(){
+        textToSpeechSingleton?.speakSentence("Obecny moduł to ustawienia")
         linearLayoutManager = LinearLayoutManager(this)
         settingRecyclerView.layoutManager = linearLayoutManager
         stringAdapter = CustomAdapter(settingsList)

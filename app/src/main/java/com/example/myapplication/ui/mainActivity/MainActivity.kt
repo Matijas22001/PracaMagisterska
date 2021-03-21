@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.myapplication.App
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.CustomAdapter
 import com.example.myapplication.helper_data_containers.UserImageIdsPair
@@ -28,7 +30,7 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigator {
 
     private lateinit var linearLayoutManager: LinearLayoutManager
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
@@ -55,14 +57,16 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         setContentView(R.layout.activity_main)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
+        if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
         inicializeList()
         initializeRecyclerView()
     }
 
     private fun initializeRecyclerView(){
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór działu")
         linearLayoutManager = LinearLayoutManager(this)
         sectionRecyclerView.layoutManager = linearLayoutManager
         stringAdapter = CustomAdapter(sectionList)
@@ -136,6 +140,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                     2 -> {
                         textToSpeechSingleton?.speakSentence("Wybrany dział to $chosenSection")
                         AppPreferences.chosenSection = chosenSection!!
+                        AppPreferences.chosenSectionId = currentlyChosenSectionID
                         val myIntent = Intent(this@MainActivity, ChooseTaskActivity::class.java)
                         this@MainActivity.startActivity(myIntent)
                         finish()

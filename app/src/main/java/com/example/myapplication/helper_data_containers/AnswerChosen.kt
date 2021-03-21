@@ -9,4 +9,9 @@ class AnswerChosen : Serializable{
 
     @SerializedName("isChosen")
     var isChosen: Boolean? = null
+
+    constructor(answerId: Int?, isChosen: Boolean?) {
+        this.answerId = answerId
+        this.isChosen = isChosen
+    }
 }

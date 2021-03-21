@@ -14,7 +14,9 @@ import androidx.appcompat.app.AppCompatActivity
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
+import com.example.myapplication.helper_data_containers.ChosenAnswersForTest
 import com.example.myapplication.model.SvgImage
 import com.example.myapplication.model.SvgImageDescription
 import com.example.myapplication.model.Test
@@ -32,7 +34,7 @@ import dagger.android.AndroidInjection
 import javax.inject.Inject
 
 class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView {
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
@@ -47,6 +49,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
     var testNameList: ArrayList<String>? = null
     var currentlyChosenTestId: Int = 0
 
+
     @BindView(R.id.wv_image)
     lateinit var imageWebView: WebView
 
@@ -55,6 +58,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
 
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór testu")
         imageWebView.settings.javaScriptEnabled = true
         imageWebView.settings.domStorageEnabled = true
         imageWebView.settings.useWideViewPort = true // it was true
@@ -92,7 +96,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
         Android.showDetail(evt.target.getAttribute("id"));
         }
         ]]> </script>"""
-        var content = ""
+        //var content = ""
         try {
             svgImage?.svgXML = svgImage?.svgXML?.substring(0, indexEndOfFirstSvgTag + 1) + javascriptScript + svgImage?.svgXML?.substring(indexEndOfFirstSvgTag + 1)
         } catch (e: Exception) {
@@ -105,12 +109,13 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
         setContentView(R.layout.show_svg)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
         svgImageDescription = Gson().fromJson(AppPreferences.chosenTaskDescription, SvgImageDescription::class.java)
         tests = Gson().fromJson(AppPreferences.chosenTaskTests, Tests::class.java)
         if(testNameList==null) testNameList = ArrayList()
+        if(AppPreferences.chosenTestId != -1) currentlyChosenTestId = AppPreferences.chosenTestId
         initializeTestList()
         initializeWebView()
     }
@@ -183,8 +188,9 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
                     2 ->
                     {
                         if(getCurrentTest()?.questionList?.size!! >0){
-                            textToSpeechSingleton?.speakSentence("Uruchamianie modułu odpowiedzi")
+                            textToSpeechSingleton?.speakSentence("Uruchamianie modułu pytań")
                             AppPreferences.chosenTest = Gson().toJson(getCurrentTest())
+                            AppPreferences.chosenTestId = currentlyChosenTestId
                             val myIntent = Intent(this@TestActivity, QuestionActivity::class.java)
                             this@TestActivity.startActivity(myIntent)
                             finish()

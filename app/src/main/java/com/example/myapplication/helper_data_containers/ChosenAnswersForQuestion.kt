@@ -8,5 +8,10 @@ class ChosenAnswersForQuestion: Serializable {
     var questionId: Int? = null
 
     @SerializedName("ListOfAnswers")
-    var answerId: ArrayList<AnswerChosen>? = null
+    var listOfAnswers: ArrayList<AnswerChosen>? = null
+
+    constructor(questionId: Int?, listOfAnswers: ArrayList<AnswerChosen>?) {
+        this.questionId = questionId
+        this.listOfAnswers = listOfAnswers
+    }
 }

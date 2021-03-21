@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.model.SvgImage
 import com.example.myapplication.model.SvgImageDescription
@@ -30,7 +31,7 @@ import javax.inject.Inject
 
 class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityNavigator {
 
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
@@ -51,6 +52,7 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
 
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
+        textToSpeechSingleton?.speakSentence("Obecny moduł to widok zadania")
         imageWebView.settings.javaScriptEnabled = true
         imageWebView.settings.domStorageEnabled = true
         imageWebView.settings.useWideViewPort = true // it was true
@@ -88,7 +90,7 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         Android.showDetail(evt.target.getAttribute("id"));
         }
         ]]> </script>"""
-        var content = ""
+        //var content = ""
         try {
             svgImage?.svgXML = svgImage?.svgXML?.substring(0, indexEndOfFirstSvgTag + 1) + javascriptScript + svgImage?.svgXML?.substring(indexEndOfFirstSvgTag + 1)
         } catch (e: Exception) {
@@ -101,7 +103,7 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         setContentView(R.layout.show_svg)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
         svgImageDescription = Gson().fromJson(AppPreferences.chosenTaskDescription, SvgImageDescription::class.java)

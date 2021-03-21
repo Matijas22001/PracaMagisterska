@@ -14,8 +14,11 @@ import androidx.appcompat.app.AppCompatActivity
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.helper_data_containers.AnswerChosen
+import com.example.myapplication.helper_data_containers.ChosenAnswersForQuestion
+import com.example.myapplication.helper_data_containers.ChosenAnswersForTest
 import com.example.myapplication.model.*
 import com.example.myapplication.ui.questionActivity.QuestionActivity
 import com.example.myapplication.ui.settingsActivity.SettingsActivity
@@ -28,7 +31,7 @@ import dagger.android.AndroidInjection
 import javax.inject.Inject
 
 class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivityView {
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
@@ -44,6 +47,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
     var answerNameList: ArrayList<String>? = null
     var currentlyChosenAnswerId: Int = 0
     var chosenAnswers: ArrayList<AnswerChosen>? = null
+    var chosenAnswersForTest: ChosenAnswersForTest? = null
 
 
     @BindView(R.id.wv_image)
@@ -54,6 +58,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
 
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
+        textToSpeechSingleton?.speakSentence("Obecny moduł to zaznaczanie odpowiedzi")
         imageWebView.settings.javaScriptEnabled = true
         imageWebView.settings.domStorageEnabled = true
         imageWebView.settings.useWideViewPort = true // it was true
@@ -83,7 +88,6 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         svgImage?.svgXML = svgImage?.svgXML?.replace("<circle id=".toRegex(), "<circle onclick=\"onClickEvent(evt)\" id=")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<rect id=".toRegex(), "<rect onclick=\"onClickEvent(evt)\" id=")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<image id=".toRegex(), "<image onclick=\"onClickEvent(evt)\" id=")
-        //                    originalSvg = originalSvg.replaceAll("stroke-width=\"", "stroke-width=\"1");
         svgImage?.svgXML = svgImage?.svgXML?.replace("<use .*<\\/use>".toRegex(), "")
         val indexEndOfFirstSvgTag: Int = svgImage?.svgXML?.indexOf(">")!!
         val javascriptScript = """<script type="application/ecmascript"> <![CDATA[
@@ -91,7 +95,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         Android.showDetail(evt.target.getAttribute("id"));
         }
         ]]> </script>"""
-        var content = ""
+        //var content = ""
         try {
             svgImage?.svgXML = svgImage?.svgXML?.substring(0, indexEndOfFirstSvgTag + 1) + javascriptScript + svgImage?.svgXML?.substring(indexEndOfFirstSvgTag + 1)
         } catch (e: Exception) {
@@ -104,12 +108,14 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         setContentView(R.layout.show_svg)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
         svgImageDescription = Gson().fromJson(AppPreferences.chosenTaskDescription, SvgImageDescription::class.java)
         test = Gson().fromJson(AppPreferences.chosenTest, Test::class.java)
+        chosenAnswersForTest = Gson().fromJson(AppPreferences.answerList, ChosenAnswersForTest::class.java)
         question = Gson().fromJson(AppPreferences.chosenQuestion, Question::class.java)
+        if(chosenAnswers==null) chosenAnswers = ArrayList()
         if(answerNameList==null) answerNameList = ArrayList()
         initializeAnswerList()
         initializeWebView()
@@ -117,9 +123,28 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
 
     private fun initializeAnswerList(){
         answerNameList?.clear()
-        for(item in question?.answerList!!){
+        for((i, item) in question?.answerList!!.withIndex()){
             answerNameList?.add(item.answerDescription!!)
+            chosenAnswers?.add(AnswerChosen(i,false))
         }
+    }
+
+    private fun checkIfItemIsOnList(): Boolean{
+        for(item in chosenAnswersForTest?.listOfQuestions!!){
+            if(item.questionId == question?.questionId){
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun checkItemIdOnList(): ChosenAnswersForQuestion?{
+        for(item in chosenAnswersForTest?.listOfQuestions!!){
+            if(item.questionId == question?.questionId){
+                return item
+            }
+        }
+        return null
     }
 
     @OnClick(R.id.btn_back)
@@ -132,6 +157,14 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
                 when (clickCountBack) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Odpowiedzi zostały zapisane")
+                        if(checkIfItemIsOnList()){
+                            chosenAnswersForTest?.listOfQuestions?.remove(checkItemIdOnList())
+                            chosenAnswersForTest?.listOfQuestions?.add(ChosenAnswersForQuestion(question?.questionId,chosenAnswers))
+                        }else{
+                            chosenAnswersForTest?.listOfQuestions?.add(ChosenAnswersForQuestion(question?.questionId,chosenAnswers))
+                        }
+                        AppPreferences.answerList = Gson().toJson(chosenAnswersForTest)
                         val myIntent = Intent(this@AnswerActivity, QuestionActivity::class.java)
                         this@AnswerActivity.startActivity(myIntent)
                         finish()
@@ -181,8 +214,12 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
                 when (clickCountSelect) {
                     1 -> textToSpeechSingleton?.speakSentence("Zaznacz odpowiedź")
                     2 -> {
-                        //ToDo
-                        textToSpeechSingleton?.speakSentence("Wybrano pytanie numer")
+                        chosenAnswers?.get(currentlyChosenAnswerId)?.isChosen = !chosenAnswers?.get(currentlyChosenAnswerId)?.isChosen!!
+                        if(chosenAnswers?.get(currentlyChosenAnswerId)?.isChosen!!){
+                            textToSpeechSingleton?.speakSentence("Zaznaczono odpowiedź")
+                        }else{
+                            textToSpeechSingleton?.speakSentence("Odznaczono odpowiedź")
+                        }
                     }
                 }
                 clickCountSelect = 0

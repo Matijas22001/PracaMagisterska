@@ -14,7 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.android.volley.RequestQueue
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
+import com.example.myapplication.helper_data_containers.ChosenAnswersForTest
 import com.example.myapplication.model.Question
 import com.example.myapplication.model.SvgImage
 import com.example.myapplication.model.SvgImageDescription
@@ -26,12 +29,13 @@ import com.example.myapplication.ui.testActivity.TestActivity
 import com.example.myapplication.utils.AppPreferences
 import com.example.myapplication.utils.TextToSpeechSingleton
 import com.example.myapplication.utils.ViewUtils
+import com.example.myapplication.utils.VolleySingleton
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import javax.inject.Inject
 
 class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, QuestionActivityView {
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
@@ -45,6 +49,8 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
     var test: Test? = null
     var questionNameList: ArrayList<String>? = null
     var currentlyChosenQuestionId: Int = 0
+    var chosenAnswersForTest: ChosenAnswersForTest? = null
+    var queue: RequestQueue? = null
 
     @BindView(R.id.wv_image)
     lateinit var imageWebView: WebView
@@ -54,6 +60,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
 
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór pytania")
         imageWebView.settings.javaScriptEnabled = true
         imageWebView.settings.domStorageEnabled = true
         imageWebView.settings.useWideViewPort = true // it was true
@@ -91,7 +98,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         Android.showDetail(evt.target.getAttribute("id"));
         }
         ]]> </script>"""
-        var content = ""
+        //var content = ""
         try {
             svgImage?.svgXML = svgImage?.svgXML?.substring(0, indexEndOfFirstSvgTag + 1) + javascriptScript + svgImage?.svgXML?.substring(indexEndOfFirstSvgTag + 1)
         } catch (e: Exception) {
@@ -104,12 +111,19 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         setContentView(R.layout.show_svg)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
+        //textToSpeechSingleton = TextToSpeechSingleton(this)
+        queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
         ViewUtils.fullScreenCall(window)
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
         svgImageDescription = Gson().fromJson(AppPreferences.chosenTaskDescription, SvgImageDescription::class.java)
         test = Gson().fromJson(AppPreferences.chosenTest, Test::class.java)
+        chosenAnswersForTest = if(AppPreferences.answerList != ""){
+            Gson().fromJson(AppPreferences.answerList, ChosenAnswersForTest::class.java)
+        }else{
+            ChosenAnswersForTest()
+        }
         if(questionNameList==null) questionNameList = ArrayList()
+        if(AppPreferences.chosenQuestionId != -1) currentlyChosenQuestionId = AppPreferences.chosenQuestionId
         initializeQuestionList()
         initializeWebView()
     }
@@ -131,6 +145,8 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                 when (clickCountBack) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wysyłanie testu")
+
                         val myIntent = Intent(this@QuestionActivity, TestActivity::class.java)
                         this@QuestionActivity.startActivity(myIntent)
                         finish()
@@ -183,6 +199,11 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                         if(getCurrentQuestion()?.answerList?.size!! >0){
                             textToSpeechSingleton?.speakSentence("Uruchamianie modułu wyboru odpowiedzi")
                             AppPreferences.chosenQuestion = Gson().toJson(getCurrentQuestion())
+                            AppPreferences.chosenQuestionId = currentlyChosenQuestionId
+                            if(AppPreferences.answerList != "") {
+                                chosenAnswersForTest?.testId = test?.testId
+                                AppPreferences.answerList = Gson().toJson(chosenAnswersForTest)
+                            }
                             val myIntent = Intent(this@QuestionActivity, AnswerActivity::class.java)
                             this@QuestionActivity.startActivity(myIntent)
                             finish()

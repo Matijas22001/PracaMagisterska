@@ -11,6 +11,8 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.android.volley.RequestQueue
+import com.example.myapplication.App
+import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.UserListAdapter
 import com.example.myapplication.helper_data_containers.ImageIdTestsForImage
@@ -30,7 +32,7 @@ import javax.inject.Inject
 class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActivityNavigator {
 
     private lateinit var linearLayoutManager: LinearLayoutManager
-    var textToSpeechSingleton: TextToSpeechSingleton? = null
+    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     var queue: RequestQueue? = null
     var studentList: ArrayList<Student>? = null
     var imageListToDownload: ArrayList<Int>? = null
@@ -63,19 +65,18 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
-        textToSpeechSingleton = TextToSpeechSingleton(this)
         queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
-        if(studentList==null) studentList = ArrayList()
-        if(userImagesIdsPairList==null) userImagesIdsPairList = ArrayList()
-        if(svgImageList==null) svgImageList = ArrayList()
-        if(svgDescriptionList==null) svgDescriptionList = ArrayList()
-        if(imageIdTestsForImageList==null) imageIdTestsForImageList = ArrayList()
+        if (studentList == null) studentList = ArrayList()
+        if (userImagesIdsPairList == null) userImagesIdsPairList = ArrayList()
+        if (svgImageList == null) svgImageList = ArrayList()
+        if (svgDescriptionList == null) svgDescriptionList = ArrayList()
+        if (imageIdTestsForImageList == null) imageIdTestsForImageList = ArrayList()
+        if (AppPreferences.chosenUser != -1) currentlyChosenUserID = AppPreferences.chosenUser - 1
         presenter.getUserListFromServer(queue!!, studentList!!)
         initializeRecyclerView()
     }
 
-    private fun initializeRecyclerView(){
-        textToSpeechSingleton?.speakSentence("Rozpoczęto pobieranie danych. Proszę czekać")
+    private fun initializeRecyclerView() {
         linearLayoutManager = LinearLayoutManager(this)
         userRecyclerView.layoutManager = linearLayoutManager
         userListAdapter = UserListAdapter(studentList!!, this)
@@ -87,62 +88,63 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         userListAdapter?.setCurrentlyChosenUser(currentlyChosenUserID)
         userListAdapter?.notifyDataSetChanged()
         chosenStudent = userListAdapter?.getItem(currentlyChosenUserID)
-        AppPreferences.chosenUser = currentlyChosenUserID+1
+        AppPreferences.chosenUser = currentlyChosenUserID + 1
         val stringUserListSerialized = gson.toJson(studentList)
         AppPreferences.userList = stringUserListSerialized
+        textToSpeechSingleton?.speakSentence("Rozpoczęto pobieranie danych. Proszę czekać")
         getDataFromServer()
     }
 
     private fun getDataFromServer() {
-        for(item in studentList!!){
+        for (item in studentList!!) {
             presenter.getUserImageIdsFromServer(queue!!, item.id!!)
         }
     }
 
     override fun addElementToList(userId: Int?, imageIdsList: ArrayList<Int>?) {
         userImagesIdsPairList?.add(UserImageIdsPair(userId, imageIdsList))
-        if(userId==studentList?.last()?.id){
+        if (userId == studentList?.last()?.id) {
             val stringUserImageIdsSerialized = gson.toJson(userImagesIdsPairList)
             AppPreferences.userIdImageIdList = stringUserImageIdsSerialized
             createImageIdsToDownload()
         }
     }
 
-    private fun createImageIdsToDownload(){
+    private fun createImageIdsToDownload() {
         var intSet: MutableSet<Int>? = null
-        for(item in userImagesIdsPairList!!){
-            if(item.userId == 1){
+        for (item in userImagesIdsPairList!!) {
+            if (item.userId == 1) {
                 intSet = LinkedHashSet(item.svgIdListFromServer)
-            }else{
+            } else {
                 intSet?.addAll(item.svgIdListFromServer!!)
             }
         }
         imageListToDownload = ArrayList(intSet!!)
         svgImageList?.clear()
-        for(item in imageListToDownload!!){
+        for (item in imageListToDownload!!) {
             presenter.getUserImageFromServer(queue!!, item)
         }
     }
 
-    override fun addImageToList(image: SvgImage?){
+    override fun addImageToList(image: SvgImage?) {
         svgImageList?.add(image!!)
-        if(image?.svgId==imageListToDownload?.last()){
+        if (image?.svgId == imageListToDownload?.last()) {
             val stringImageListSerialized = gson.toJson(svgImageList)
             AppPreferences.imageList = stringImageListSerialized
             getImageDescriptionFromServer()
         }
     }
 
-    private fun getImageDescriptionFromServer(){
+    private fun getImageDescriptionFromServer() {
         svgDescriptionList?.clear()
-        for(item in imageListToDownload!!){
+        for (item in imageListToDownload!!) {
             presenter.getImageDescriptionFromServer(queue!!, item)
         }
     }
 
-    override fun addImageDescriptionToList(image: SvgImageDescription?){
+    override fun addImageDescriptionToList(image: SvgImageDescription?) {
         svgDescriptionList?.add(image!!)
-        if(image?.svgId==imageListToDownload?.last()){
+        if (image?.svgId == imageListToDownload?.last()) {
             val stringDescriptionListSerialized = gson.toJson(svgDescriptionList)
             AppPreferences.descriptionList = stringDescriptionListSerialized
             //textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
@@ -150,16 +152,16 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         }
     }
 
-    private fun getTestsForImage(){
+    private fun getTestsForImage() {
         imageIdTestsForImageList?.clear()
-        for(item in imageListToDownload!!){
+        for (item in imageListToDownload!!) {
             presenter.getImageTestsFromServer(queue!!, item)
         }
     }
 
-    override fun addTestToList(imageId: Int?, tests: Tests?){
-        imageIdTestsForImageList?.add(ImageIdTestsForImage(imageId,tests))
-        if(imageId==imageIdTestsForImageList?.last()?.imageId){
+    override fun addTestToList(imageId: Int?, tests: Tests?) {
+        imageIdTestsForImageList?.add(ImageIdTestsForImage(imageId, tests))
+        if (imageId == imageIdTestsForImageList?.last()?.imageId) {
             val stringTestListSerialized = gson.toJson(imageIdTestsForImageList)
             AppPreferences.testList = stringTestListSerialized
             textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
@@ -167,9 +169,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     @OnClick(R.id.btn_back)
-    fun goBack(){
+    fun goBack() {
         clickCountBack++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountBack) {
@@ -182,9 +184,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     @OnClick(R.id.btn_previous)
-    fun goPrevious(){
+    fun goPrevious() {
         clickCountPrevious++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountPrevious) {
@@ -198,9 +200,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     @OnClick(R.id.btn_next)
-    fun goNext(){
+    fun goNext() {
         clickCountNext++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountNext) {
@@ -214,9 +216,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     @OnClick(R.id.btn_select)
-    fun goSelect(){
+    fun goSelect() {
         clickCountSelect++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountSelect) {
@@ -240,9 +242,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     @OnClick(R.id.btn_settings)
-    fun goSettings(){
+    fun goSettings() {
         clickCountSettings++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountSettings) {
@@ -258,9 +260,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     @OnClick(R.id.btn_test)
-    fun goTest(){
+    fun goTest() {
         clickCountTest++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountTest) {
@@ -273,11 +275,10 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
 
-
-    fun chooseNextUser(){
+    fun chooseNextUser() {
         val studentListSize = studentList?.size!! - 1
         currentlyChosenUserID += 1
-        if(currentlyChosenUserID>studentListSize){
+        if (currentlyChosenUserID > studentListSize) {
             currentlyChosenUserID = 0
         }
         userListAdapter?.setCurrentlyChosenUser(currentlyChosenUserID)
@@ -286,10 +287,10 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
     }
 
-    fun choose5thNextUser(){
+    fun choose5thNextUser() {
         val studentListSize = studentList?.size!! - 1
         currentlyChosenUserID += 4
-        if(currentlyChosenUserID>studentListSize){
+        if (currentlyChosenUserID > studentListSize) {
             currentlyChosenUserID = 0 + kotlin.math.abs(4 - studentListSize)
         }
         userListAdapter?.setCurrentlyChosenUser(currentlyChosenUserID)
@@ -298,10 +299,10 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
     }
 
-    fun choose5thPreviousUser(){
+    fun choose5thPreviousUser() {
         val studentListSize = studentList?.size!! - 1
         currentlyChosenUserID -= 4
-        if(currentlyChosenUserID<0){
+        if (currentlyChosenUserID < 0) {
             currentlyChosenUserID += studentListSize
         }
         userListAdapter?.setCurrentlyChosenUser(currentlyChosenUserID)
@@ -310,10 +311,10 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
     }
 
-    fun choosePreviousUser(){
+    fun choosePreviousUser() {
         val studentListSize = studentList?.size!! - 1
         currentlyChosenUserID -= 1
-        if(currentlyChosenUserID<0){
+        if (currentlyChosenUserID < 0) {
             currentlyChosenUserID = studentListSize
         }
         userListAdapter?.setCurrentlyChosenUser(currentlyChosenUserID)
@@ -321,6 +322,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         chosenStudent = userListAdapter?.getItem(currentlyChosenUserID)
         textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
     }
+
     override fun showMessage(resId: Int) {}
     override fun showMessage(message: String?) {}
 
