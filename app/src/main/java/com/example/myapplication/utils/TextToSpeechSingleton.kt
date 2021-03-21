@@ -22,6 +22,12 @@ class TextToSpeechSingleton(context: Context) {
         }
     }
 
+    fun setSpeechSpeed(speechSpeed: Float?){
+        if (speechSpeed != null) {
+            mTTS?.setSpeechRate(speechSpeed)
+        }
+    }
+
     @Synchronized
     fun getInstance(context: Context): TextToSpeechSingleton? {
         if (instance == null) {

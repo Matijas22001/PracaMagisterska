@@ -59,6 +59,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
         textToSpeechSingleton?.speakSentence("Obecny moduł to wybór testu")
+        textToSpeechSingleton?.speakSentence("Zaznaczony test to " + testNameList?.get(currentlyChosenTestId))
         imageWebView.settings.javaScriptEnabled = true
         imageWebView.settings.domStorageEnabled = true
         imageWebView.settings.useWideViewPort = true // it was true

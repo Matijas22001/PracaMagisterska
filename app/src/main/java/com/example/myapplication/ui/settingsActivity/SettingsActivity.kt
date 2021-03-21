@@ -16,6 +16,8 @@ import com.example.myapplication.utils.AppPreferences
 import com.example.myapplication.utils.TextToSpeechSingleton
 import com.example.myapplication.utils.ViewUtils
 import dagger.android.AndroidInjection
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import javax.inject.Inject
 import kotlin.math.round
 
@@ -34,6 +36,8 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
     private var currentlyChosenSetting: Int = 0
     private var stringAdapter: CustomAdapter? = null
     private var workingMode = 0 //0 - choose setting, 1 - voice speed, 2 - click interval, 3 - quitApp
+    val df = DecimalFormat("#.##")
+
 
     @Inject
     lateinit var presenter: SettingsPresenter
@@ -47,14 +51,13 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
-        //textToSpeechSingleton = TextToSpeechSingleton(this)
         mockInicializeLists()
         initializeRecyclerView()
-        textToSpeechSingleton?.speakSentence("Obecny moduł opcje")
+        df.roundingMode = RoundingMode.CEILING
     }
 
     private fun initializeRecyclerView(){
-        textToSpeechSingleton?.speakSentence("Obecny moduł to ustawienia")
+        textToSpeechSingleton?.speakSentence("Obecny moduł opcje. Zaznaczona opcja to zmiana prędkości mowy.")
         linearLayoutManager = LinearLayoutManager(this)
         settingRecyclerView.layoutManager = linearLayoutManager
         stringAdapter = CustomAdapter(settingsList)
@@ -75,6 +78,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                     2 -> {
                         if(workingMode==0){
+                            textToSpeechSingleton?.speakSentence("Powrót do wcześniejszego ekranu")
                             finish()
                         }else{
                             reactToWorkingModeBack()
@@ -221,7 +225,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
         when(workingMode){
             1-> {
                 decrementSpeechSpeed()
-                textToSpeechSingleton?.speakSentence("Obecna predkość mowy to " + "0.1f".format(AppPreferences.speechSpeed))
+                textToSpeechSingleton?.speakSentence("Zmniejszono prędkość mowy")
             }
             2->{
                 decrementTapInterval()
@@ -235,7 +239,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
         when(workingMode){
             1-> {
                 incrementSpeechSpeed()
-                textToSpeechSingleton?.speakSentence("Obecna predkość mowy to " + "0.1f".format(AppPreferences.speechSpeed))
+                textToSpeechSingleton?.speakSentence("Zwiększono prędkość mowy")
             }
             2->{
                 incrementTapInterval()
@@ -256,7 +260,8 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
     }
 
     fun reactToWorkingModeBack(){
-       workingMode=0
+        workingMode=0
+        textToSpeechSingleton?.speakSentence("Nowe ustawienie zostało zapisane")
     }
 
     fun reactToWorkingModeSelect(){
@@ -264,6 +269,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
            0 -> setNewWorkingMode()
            1 -> {
                textToSpeechSingleton?.speakSentence("Nowe ustawienie zostało zapisane")
+               textToSpeechSingleton?.setSpeechSpeed(AppPreferences.speechSpeed)
                workingMode = 0
            }
            2 -> {
@@ -278,6 +284,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
     }
 
     private fun setNewWorkingMode(){
+        textToSpeechSingleton?.speakSentence("Przechodzenie do zmiany ustawienia")
         workingMode = currentlyChosenSetting+1
     }
 

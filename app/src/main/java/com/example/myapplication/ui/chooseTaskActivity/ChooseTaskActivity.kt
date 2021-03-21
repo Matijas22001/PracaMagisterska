@@ -70,7 +70,6 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
     }
 
     private fun initializeRecyclerView(){
-        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór zadania")
         linearLayoutManager = LinearLayoutManager(this)
         taskRecyclerView.layoutManager = linearLayoutManager
         stringAdapter = CustomAdapter(taskList)
@@ -79,6 +78,7 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenTaskID)
         stringAdapter?.notifyDataSetChanged()
         chosenTask = stringAdapter?.getItem(currentlyChosenTaskID)
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór zadania. Zaznaczone zadanie to $chosenTask")
     }
 
 
@@ -144,7 +144,7 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
                 when (clickCountSelect) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
                     2 -> {
-                        textToSpeechSingleton?.speakSentence("Wybrane zadanie to $chosenTask")
+                        //textToSpeechSingleton?.speakSentence("Wybrane zadanie to $chosenTask")
                         AppPreferences.chosenTask = Gson().toJson(getCurrentTask(chosenTask!!))
                         AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(getCurrentTask(chosenTask!!)?.svgId!!))
                         AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(getCurrentTask(chosenTask!!)?.svgId!!))

@@ -59,6 +59,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
         textToSpeechSingleton?.speakSentence("Obecny moduł to zaznaczanie odpowiedzi")
+        textToSpeechSingleton?.speakSentence("Zaznaczona odpowiedź to " + answerNameList?.get(currentlyChosenAnswerId))
         imageWebView.settings.javaScriptEnabled = true
         imageWebView.settings.domStorageEnabled = true
         imageWebView.settings.useWideViewPort = true // it was true
@@ -158,6 +159,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                     2 -> {
                         textToSpeechSingleton?.speakSentence("Odpowiedzi zostały zapisane")
+                        if(chosenAnswersForTest?.listOfQuestions == null) chosenAnswersForTest?.listOfQuestions = ArrayList()
                         if(checkIfItemIsOnList()){
                             chosenAnswersForTest?.listOfQuestions?.remove(checkItemIdOnList())
                             chosenAnswersForTest?.listOfQuestions?.add(ChosenAnswersForQuestion(question?.questionId,chosenAnswers))

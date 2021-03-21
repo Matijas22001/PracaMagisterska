@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     }
 
     private fun initializeRecyclerView(){
-        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór działu")
         linearLayoutManager = LinearLayoutManager(this)
         sectionRecyclerView.layoutManager = linearLayoutManager
         stringAdapter = CustomAdapter(sectionList)
@@ -75,6 +74,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSectionID)
         stringAdapter?.notifyDataSetChanged()
         chosenSection = stringAdapter?.getItem(currentlyChosenSectionID)
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór działu. Zaznaczony dział to $chosenSection")
     }
 
     @OnClick(R.id.btn_back)
@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 when (clickCountSelect) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
                     2 -> {
-                        textToSpeechSingleton?.speakSentence("Wybrany dział to $chosenSection")
+                        //textToSpeechSingleton?.speakSentence("Wybrany dział to $chosenSection")
                         AppPreferences.chosenSection = chosenSection!!
                         AppPreferences.chosenSectionId = currentlyChosenSectionID
                         val myIntent = Intent(this@MainActivity, ChooseTaskActivity::class.java)

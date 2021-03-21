@@ -58,7 +58,6 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
     }
 
     private fun initializeRecyclerView(){
-        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór grubości linii")
         linearLayoutManager = LinearLayoutManager(this)
         sizeRecyclerView.layoutManager = linearLayoutManager
         stringAdapter = CustomAdapter(sizeList)
@@ -67,6 +66,7 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSizeID)
         stringAdapter?.notifyDataSetChanged()
         chosenSize = stringAdapter?.getItem(currentlyChosenSizeID)
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór grubości linii. Zaznaczony rozmiar to $chosenSize")
     }
 
     @OnClick(R.id.btn_back)
@@ -130,7 +130,7 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
                 when (clickCountSelect) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
                     2 -> {
-                        textToSpeechSingleton?.speakSentence("Wybrany rozmiar to $chosenSize")
+                        //textToSpeechSingleton?.speakSentence("Wybrany rozmiar to $chosenSize")
                         AppPreferences.chosenImageSize = Integer.parseInt(chosenSize?.split(" ")?.get(1).toString())
                         AppPreferences.chosenImageThickness = currentlyChosenSizeID
                         val myIntent = Intent(this@ChooseImageSizeActivity, ShowSvgActivity::class.java)

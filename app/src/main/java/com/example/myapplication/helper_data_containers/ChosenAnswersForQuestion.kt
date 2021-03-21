@@ -4,10 +4,10 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 class ChosenAnswersForQuestion: Serializable {
-    @SerializedName("questionId")
+    @SerializedName("id")
     var questionId: Int? = null
 
-    @SerializedName("ListOfAnswers")
+    @SerializedName("answersList")
     var listOfAnswers: ArrayList<AnswerChosen>? = null
 
     constructor(questionId: Int?, listOfAnswers: ArrayList<AnswerChosen>?) {

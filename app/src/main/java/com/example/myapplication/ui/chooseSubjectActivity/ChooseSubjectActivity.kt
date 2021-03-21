@@ -126,7 +126,7 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
                 when (clickCountSelect) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
                     2 -> {
-                        textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $chosenSubject")
+                        //textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $chosenSubject")
                         val myIntent = Intent(this@ChooseSubjectActivity, MainActivity::class.java)
                         this@ChooseSubjectActivity.startActivity(myIntent)
                         finish()

@@ -65,6 +65,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
+        clearAppData()
         queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
         if (studentList == null) studentList = ArrayList()
         if (userImagesIdsPairList == null) userImagesIdsPairList = ArrayList()
@@ -76,6 +77,8 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         initializeRecyclerView()
     }
 
+
+
     private fun initializeRecyclerView() {
         linearLayoutManager = LinearLayoutManager(this)
         userRecyclerView.layoutManager = linearLayoutManager
@@ -85,13 +88,14 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     override fun updateRecyclerView() {
+        textToSpeechSingleton?.speakSentence("Pobieranie danych. Proszę czekać")
         userListAdapter?.setCurrentlyChosenUser(currentlyChosenUserID)
         userListAdapter?.notifyDataSetChanged()
         chosenStudent = userListAdapter?.getItem(currentlyChosenUserID)
         AppPreferences.chosenUser = currentlyChosenUserID + 1
         val stringUserListSerialized = gson.toJson(studentList)
         AppPreferences.userList = stringUserListSerialized
-        textToSpeechSingleton?.speakSentence("Rozpoczęto pobieranie danych. Proszę czekać")
+        //textToSpeechSingleton?.speakSentence("Pobieranie danych. Proszę czekać")
         getDataFromServer()
     }
 
@@ -164,7 +168,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         if (imageId == imageIdTestsForImageList?.last()?.imageId) {
             val stringTestListSerialized = gson.toJson(imageIdTestsForImageList)
             AppPreferences.testList = stringTestListSerialized
-            textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
+            textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych. Zaznaczony użytkownik to " + chosenStudent?.name + chosenStudent?.surname)
         }
     }
 
@@ -225,7 +229,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
                     2 -> {
                         if (chosenStudent != null) {
-                            textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
+                            //textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
                             AppPreferences.chosenUser = currentlyChosenUserID + 1
                             val myIntent = Intent(this@UserListActivity, MainActivity::class.java)
                             this@UserListActivity.startActivity(myIntent)
@@ -321,6 +325,29 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         userListAdapter?.notifyDataSetChanged()
         chosenStudent = userListAdapter?.getItem(currentlyChosenUserID)
         textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
+    }
+
+    private fun clearAppData(){
+        //AppPreferences.chosenUser = -1
+        AppPreferences.userList = ""
+        AppPreferences.userIdImageIdList = ""
+        AppPreferences.imageList = ""
+        AppPreferences.descriptionList = ""
+        AppPreferences.testList = ""
+        AppPreferences.answerList = ""
+        AppPreferences.chosenSection = ""
+        AppPreferences.chosenTask = ""
+        AppPreferences.chosenTaskDescription = ""
+        AppPreferences.chosenTaskTests = ""
+        AppPreferences.chosenTest = ""
+        AppPreferences.chosenQuestion = ""
+        AppPreferences.chosenImageSize = -1
+        AppPreferences.chosenSectionId = -1
+        AppPreferences.chosenTaskId = -1
+        AppPreferences.chosenImageThickness = -1
+        AppPreferences.chosenTestId = -1
+        AppPreferences.chosenQuestionId = -1
+        AppPreferences.chosenAnswerId = -1
     }
 
     override fun showMessage(resId: Int) {}

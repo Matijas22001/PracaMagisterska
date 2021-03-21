@@ -15,6 +15,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.android.volley.RequestQueue
+import com.example.myapplication.App
 import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.helper_data_containers.ChosenAnswersForTest
@@ -61,6 +62,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
         textToSpeechSingleton?.speakSentence("Obecny moduł to wybór pytania")
+        textToSpeechSingleton?.speakSentence("Zaznaczone pytanie to " + questionNameList?.get(currentlyChosenQuestionId))
         imageWebView.settings.javaScriptEnabled = true
         imageWebView.settings.domStorageEnabled = true
         imageWebView.settings.useWideViewPort = true // it was true
@@ -143,10 +145,10 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountBack) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
+                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back)+" i wyślij test")
                     2 -> {
-                        textToSpeechSingleton?.speakSentence("Wysyłanie testu")
-
+                        textToSpeechSingleton?.speakSentence("Test został wysłany")
+                        //presenter.sendTestToServer(queue!!)
                         val myIntent = Intent(this@QuestionActivity, TestActivity::class.java)
                         this@QuestionActivity.startActivity(myIntent)
                         finish()
@@ -200,7 +202,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                             textToSpeechSingleton?.speakSentence("Uruchamianie modułu wyboru odpowiedzi")
                             AppPreferences.chosenQuestion = Gson().toJson(getCurrentQuestion())
                             AppPreferences.chosenQuestionId = currentlyChosenQuestionId
-                            if(AppPreferences.answerList != "") {
+                            if(AppPreferences.answerList == "") {
                                 chosenAnswersForTest?.testId = test?.testId
                                 AppPreferences.answerList = Gson().toJson(chosenAnswersForTest)
                             }
