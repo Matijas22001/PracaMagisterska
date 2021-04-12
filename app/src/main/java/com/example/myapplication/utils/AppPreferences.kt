@@ -23,7 +23,7 @@ object AppPreferences {
     private val CURRENTLY_CHOSEN_TASK_TESTS = Pair("CURRENTLY_CHOSEN_TASK_TESTS", "")
     private val CURRENTLY_CHOSEN_TASK_TEST = Pair("CURRENTLY_CHOSEN_TASK_TEST", "")
     private val CURRENTLY_CHOSEN_QUESTION = Pair("CURRENTLY_CHOSEN_QUESTION", "")
-    private val CURRENTLY_CHOSEN_IMAGE_SIZE = Pair("CURRENTLY_CHOSEN_IMAGE_SIZE", -1)
+    private val CURRENTLY_CHOSEN_IMAGE_SIZE = Pair("CURRENTLY_CHOSEN_IMAGE_SIZE", 10)
     private val CURRENTLY_CHOSEN_IMAGE_SIZE_ID = Pair("CURRENTLY_CHOSEN_IMAGE_SIZE_ID", -1)
     private val CURRENTLY_CHOSEN_TEST_ID = Pair("CURRENTLY_CHOSEN_TEST_ID", -1)
     private val CURRENTLY_CHOSEN_QUESTION_ID = Pair("CURRENTLY_CHOSEN_QUESTION_ID", -1)
@@ -51,6 +51,7 @@ object AppPreferences {
         set(value) = preferences.edit {
             it.putLong(TAP_INTERVAL.first, value)
         }
+
 
     var chosenUser: Int
         get() = preferences.getInt(CURRENTLY_CHOSEN_USER.first, CURRENTLY_CHOSEN_USER.second)
@@ -93,13 +94,7 @@ object AppPreferences {
         set(value) = preferences.edit {
             it.putString(CURRENT_ANSWER_LIST.first, value)
         }
-
-    //var chosenSubject: Int
-    //    get() = preferences.getInt(CURRENTLY_CHOSEN_SUBJECT.first, CURRENTLY_CHOSEN_SUBJECT.second)
-    //    set(value) = preferences.edit {
-    //        it.putInt(CURRENTLY_CHOSEN_SUBJECT.first, value)
-    //    }
-
+    
     var chosenSection: String
         get() = preferences.getString(CURRENTLY_CHOSEN_SECTION.first, CURRENTLY_CHOSEN_SECTION.second)!!
         set(value) = preferences.edit {

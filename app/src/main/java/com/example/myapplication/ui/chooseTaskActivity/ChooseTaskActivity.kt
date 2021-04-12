@@ -21,6 +21,7 @@ import com.example.myapplication.model.Tests
 import com.example.myapplication.ui.chooseImageSizeActivity.ChooseImageSizeActivity
 import com.example.myapplication.ui.mainActivity.MainActivity
 import com.example.myapplication.ui.settingsActivity.SettingsActivity
+import com.example.myapplication.ui.showSvgActivity.ShowSvgActivity
 import com.example.myapplication.utils.AppPreferences
 import com.example.myapplication.utils.TextToSpeechSingleton
 import com.example.myapplication.utils.ViewUtils
@@ -61,7 +62,6 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         setContentView(R.layout.choose_task)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
         if(AppPreferences.chosenTaskId != -1) currentlyChosenTaskID = AppPreferences.chosenTaskId
@@ -149,7 +149,7 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
                         AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(getCurrentTask(chosenTask!!)?.svgId!!))
                         AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(getCurrentTask(chosenTask!!)?.svgId!!))
                         AppPreferences.chosenTaskId = currentlyChosenTaskID
-                        val myIntent = Intent(this@ChooseTaskActivity, ChooseImageSizeActivity::class.java)
+                        val myIntent = Intent(this@ChooseTaskActivity, ShowSvgActivity::class.java)
                         this@ChooseTaskActivity.startActivity(myIntent)
                         finish()
                     }

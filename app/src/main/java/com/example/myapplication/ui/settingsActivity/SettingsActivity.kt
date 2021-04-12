@@ -35,7 +35,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
     private var chosenSetting: String? = null
     private var currentlyChosenSetting: Int = 0
     private var stringAdapter: CustomAdapter? = null
-    private var workingMode = 0 //0 - choose setting, 1 - voice speed, 2 - click interval, 3 - quitApp
+    private var workingMode = 0 //0 - choose setting, 1 - voice speed, 2 - click interval, 3 - line thickness,  4 - quitApp
     val df = DecimalFormat("#.##")
 
 
@@ -102,7 +102,8 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
                             0->textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_previous))
                             1->textToSpeechSingleton?.speakSentence("Zmniejsz prędkość mowy")
                             2->textToSpeechSingleton?.speakSentence("Zmniejsz interwał między kliknięciami")
-                            3->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
+                            3->textToSpeechSingleton?.speakSentence("Zmniejsz grubość linii")
+                            4->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
                         }
                     }
                     2 -> {
@@ -130,7 +131,8 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
                             0->textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_next))
                             1->textToSpeechSingleton?.speakSentence("Zwiększ prędkość mowy")
                             2->textToSpeechSingleton?.speakSentence("Zwiększ interwał między kliknięciami")
-                            3->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
+                            3->textToSpeechSingleton?.speakSentence("Zwiększ grubość linii")
+                            4->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
                         }
                     }
                     2-> {
@@ -231,7 +233,11 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
                 decrementTapInterval()
                 textToSpeechSingleton?.speakSentence("Obecny interwał pomiędzy kliknięciami to " + AppPreferences.tapInterval/1000 + " sekund")
             }
-            3->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
+            3->{
+                decrementLineThickness()
+                textToSpeechSingleton?.speakSentence("Obecny grubość linii " + AppPreferences.chosenImageSize)
+            }
+            4->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
         }
     }
 
@@ -245,7 +251,11 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
                 incrementTapInterval()
                 textToSpeechSingleton?.speakSentence("Obecny interwał pomiędzy kliknięciami to " + AppPreferences.tapInterval/1000 + " sekund")
             }
-            3->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
+            3->{
+                incrementLineThickness()
+                textToSpeechSingleton?.speakSentence("Obecny grubość linii " + AppPreferences.chosenImageSize)
+            }
+            4->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
         }
     }
 
@@ -277,6 +287,10 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
                workingMode = 0
            }
            3 -> {
+               textToSpeechSingleton?.speakSentence("Nowe ustawienie zostało zapisane")
+               workingMode = 0
+           }
+           4 -> {
                textToSpeechSingleton?.speakSentence("Zamykanie aplikacji")
                //quitApp()
            }
@@ -312,9 +326,22 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator {
         }
     }
 
+    private fun incrementLineThickness(){
+        if(AppPreferences.chosenImageSize in 10..39){
+            AppPreferences.chosenImageSize += 5
+        }
+    }
+
+    private fun decrementLineThickness(){
+        if(AppPreferences.chosenImageSize in 11..40){
+            AppPreferences.chosenImageSize -= 5
+        }
+    }
+
     private fun mockInicializeLists() {
         settingsList.add("Prędkość mowy")
         settingsList.add("Czas pomiędzy przyciśnięciami")
+        settingsList.add("Grubość linii")
         settingsList.add("Wyjście z aplikacji")
     }
 

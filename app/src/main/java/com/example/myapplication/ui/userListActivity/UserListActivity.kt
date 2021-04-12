@@ -341,7 +341,6 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         AppPreferences.chosenTaskTests = ""
         AppPreferences.chosenTest = ""
         AppPreferences.chosenQuestion = ""
-        AppPreferences.chosenImageSize = -1
         AppPreferences.chosenSectionId = -1
         AppPreferences.chosenTaskId = -1
         AppPreferences.chosenImageThickness = -1

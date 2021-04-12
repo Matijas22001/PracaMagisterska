@@ -108,6 +108,11 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        initializeWebView()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.show_svg)
@@ -148,10 +153,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back)+" i wyślij test")
                     2 -> {
                         textToSpeechSingleton?.speakSentence("Test został wysłany")
-                        //presenter.sendTestToServer(queue!!)
-                        val myIntent = Intent(this@QuestionActivity, TestActivity::class.java)
-                        this@QuestionActivity.startActivity(myIntent)
-                        finish()
+                        presenter.sendTestToServer(queue!!)
                     }
                 }
                 clickCountBack = 0
@@ -252,17 +254,51 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         }.start()
     }
 
+
+    override fun sendTestAndCloseActivity(){
+        val myIntent = Intent(this@QuestionActivity, TestActivity::class.java)
+        this@QuestionActivity.startActivity(myIntent)
+        finish()
+    }
+
     var mCountDownTimer: CountDownTimer = object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
         override fun onTick(millisUntilFinished: Long) {}
         override fun onFinish() {
             when (clickCount) {
-                1 -> textToSpeechSingleton?.speakSentence("Opisy dostępne po uruchomieniu testu - proszę wybrać test oraz pytanie") //onSingleClick()
-                2 -> textToSpeechSingleton?.speakSentence("Opisy dostępne po uruchomieniu testu - proszę wybrać test oraz pytanie")//onDoubleClick()
-                3 -> textToSpeechSingleton?.speakSentence("Opisy dostępne po uruchomieniu testu - proszę wybrać test oraz pytanie")//onTripleClick()
-                else -> textToSpeechSingleton?.speakSentence("Opisy dostępne po uruchomieniu testu - proszę wybrać test oraz pytanie")//onDoubleClick()
+                1 -> onSingleClick()
+                2 -> onDoubleClick()
+                3 -> onTripleClick()
+                else -> onDoubleClick()
             }
             clickCount = 0
             selectedId = ""
+        }
+    }
+
+    private fun onSingleClick() {
+        for (item in svgImageDescription?.svgModel!!) {
+            if (item.pathId == selectedId && item.defaultOneClick!=null) {
+                textToSpeechSingleton?.speakSentence(item.defaultOneClick)
+                break
+            }
+        }
+    }
+
+    private fun onDoubleClick() {
+        for (item in svgImageDescription?.svgModel!!) {
+            if (item.pathId == selectedId && item.defaultDoubleClick!=null) {
+                textToSpeechSingleton?.speakSentence(item.defaultDoubleClick)
+                break
+            }
+        }
+    }
+
+    private fun onTripleClick() {
+        for (item in svgImageDescription?.svgModel!!) {
+            if (item.pathId == selectedId && item.defaultTripleClick!=null) {
+                textToSpeechSingleton?.speakSentence(item.defaultTripleClick)
+                break
+            }
         }
     }
 

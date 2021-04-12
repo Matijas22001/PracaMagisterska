@@ -122,6 +122,11 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         initializeWebView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        initializeWebView()
+    }
+
     private fun initializeAnswerList(){
         answerNameList?.clear()
         for((i, item) in question?.answerList!!.withIndex()){

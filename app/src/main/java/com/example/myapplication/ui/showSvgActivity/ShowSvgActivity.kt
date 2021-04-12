@@ -20,6 +20,7 @@ import com.example.myapplication.model.SvgImage
 import com.example.myapplication.model.SvgImageDescription
 import com.example.myapplication.model.Tests
 import com.example.myapplication.ui.chooseImageSizeActivity.ChooseImageSizeActivity
+import com.example.myapplication.ui.chooseTaskActivity.ChooseTaskActivity
 import com.example.myapplication.ui.settingsActivity.SettingsActivity
 import com.example.myapplication.ui.testActivity.TestActivity
 import com.example.myapplication.utils.AppPreferences
@@ -111,6 +112,11 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         initializeWebView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        initializeWebView()
+    }
+
     @OnClick(R.id.btn_back)
     fun goBack(){
         //ToDO
@@ -121,7 +127,7 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
                 when (clickCountBack) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                     2 -> {
-                        val myIntent = Intent(this@ShowSvgActivity, ChooseImageSizeActivity::class.java)
+                        val myIntent = Intent(this@ShowSvgActivity, ChooseTaskActivity::class.java)
                         this@ShowSvgActivity.startActivity(myIntent)
                         finish()
                     }
@@ -225,42 +231,42 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         override fun onTick(millisUntilFinished: Long) {}
         override fun onFinish() {
             when (clickCount) {
-                1 -> textToSpeechSingleton?.speakSentence("Opisy dostępne po uruchomieniu testu - proszę kliknąć przycisk zatwierdź i wybrać test oraz pytanie") //onSingleClick()
-                2 -> textToSpeechSingleton?.speakSentence("Opisy dostępne po uruchomieniu testu - proszę kliknąć przycisk zatwierdź i wybrać test oraz pytanie")//onDoubleClick()
-                3 -> textToSpeechSingleton?.speakSentence("Opisy dostępne po uruchomieniu testu - proszę kliknąć przycisk zatwierdź i wybrać test oraz pytanie")//onTripleClick()
-                else -> textToSpeechSingleton?.speakSentence("Opisy dostępne po uruchomieniu testu - proszę kliknąć przycisk zatwierdź i wybrać test oraz pytanie")//onDoubleClick()
+                1 -> onSingleClick()
+                2 -> onDoubleClick()
+                3 -> onTripleClick()
+                else -> onDoubleClick()
             }
             clickCount = 0
             selectedId = ""
         }
     }
 
-   //private fun onSingleClick() {
-   //    for (item in svgImageDescription?.svgModel!!) {
-   //        if (item.pathId == selectedId) {
-   //            textToSpeechSingleton?.speakSentence(item.onClickDescriptions?.get(0)?.oneClick)
-   //            break
-   //        }
-   //    }
-   //}
+   private fun onSingleClick() {
+       for (item in svgImageDescription?.svgModel!!) {
+           if (item.pathId == selectedId && item.defaultOneClick!=null) {
+               textToSpeechSingleton?.speakSentence(item.defaultOneClick)
+               break
+           }
+       }
+   }
 
-   //private fun onDoubleClick() {
-   //    for (item in svgImageDescription?.svgModel!!) {
-   //        if (item.pathId == selectedId) {
-   //            textToSpeechSingleton?.speakSentence(item.onClickDescriptions?.get(0)?.doubleClick)
-   //            break
-   //        }
-   //    }
-   //}
+   private fun onDoubleClick() {
+       for (item in svgImageDescription?.svgModel!!) {
+           if (item.pathId == selectedId && item.defaultDoubleClick!=null) {
+               textToSpeechSingleton?.speakSentence(item.defaultDoubleClick)
+               break
+           }
+       }
+   }
 
-   //private fun onTripleClick() {
-   //    for (item in svgImageDescription?.svgModel!!) {
-   //        if (item.pathId == selectedId) {
-   //            textToSpeechSingleton?.speakSentence(item.onClickDescriptions?.get(0)?.tripleClick)
-   //            break
-   //        }
-   //    }
-   //}
+   private fun onTripleClick() {
+       for (item in svgImageDescription?.svgModel!!) {
+           if (item.pathId == selectedId && item.defaultTripleClick!=null) {
+               textToSpeechSingleton?.speakSentence(item.defaultTripleClick)
+               break
+           }
+       }
+   }
 
     class WebViewInterface {
         var activity: ShowSvgActivity? = null
@@ -271,9 +277,6 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         @JavascriptInterface
         fun showDetail(content: String) {
             Log.e("Kliknięto", "ID: $content")
-            //Log.e("Kliknięto", "ID: $content")
-            //textToSpeechSingleton.speakSentence(content);
-            //customSharedPreferences.setSelectedObjectId(content)
             activity?.clickCount =  activity?.clickCount!! + 1
             activity?.selectedId = content
             activity?.mCountDownTimer?.start()
