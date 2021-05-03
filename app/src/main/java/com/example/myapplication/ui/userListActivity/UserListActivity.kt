@@ -49,6 +49,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     private var clickCountSettings = 0
     private var clickCountTest = 0
     val gson = Gson()
+    //test123
 
 
     @BindView(R.id.rv_user_list)
