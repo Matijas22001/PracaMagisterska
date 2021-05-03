@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.userListActivity
 
+import androidx.appcompat.app.AlertDialog
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
@@ -8,6 +9,25 @@ import com.google.gson.Gson
 import org.json.JSONObject
 
 class UserListActivityPresenter(private val view: UserListActivityView?, private val navigator: UserListActivityNavigator?){
+
+    fun loginUser(queue: RequestQueue, login: String, password: String, dialog: AlertDialog){
+        val url = "http://157.158.57.124:50820/api/Auth/Login"
+        var loginResponse: LoginResponse? = null
+        val jsonObjectRequestData = JSONObject()
+        jsonObjectRequestData.put("userName", login)
+        jsonObjectRequestData.put("password", password)
+        jsonObjectRequestData.put("rememberMe", true)
+        val jsonObjectRequest = JsonObjectRequest(Request.Method.POST, url, null,
+                { response ->
+                    loginResponse = Gson().fromJson(response.toString(),LoginResponse::class.java)
+                    view?.userLoggedInSuccessfulLogic(loginResponse!!, dialog)
+                },
+                { error ->
+                    error.stackTrace
+                }
+        )
+        queue.add(jsonObjectRequest)
+    }
 
     fun getUserListFromServer(queue: RequestQueue, studentListToShow: ArrayList<Student>){
         val url = "http://157.158.57.124:50820/api/device/Students/GetStudents"

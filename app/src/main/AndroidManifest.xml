@@ -6,6 +6,8 @@
 
     <dist:module dist:instant="true" />
 
+
+    <uses-permission android:name="android.permission.USE_SIP" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
@@ -19,6 +21,9 @@
     <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW"
         tools:ignore="ProtectedPermissions" />
 
+    <uses-feature android:name="android.software.sip.voip" android:required="true" />
+    <uses-feature android:name="android.hardware.wifi" android:required="true" />
+    <uses-feature android:name="android.hardware.microphone" android:required="true" />
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -28,6 +33,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:networkSecurityConfig="@xml/network_security_config">
+<!--        <receiver android:name=".IncomingCallReceiver" android:label="Call Receiver" />-->
 
         <activity android:name=".ui.userListActivity.UserListActivity"
             android:screenOrientation="landscape">

@@ -55,6 +55,7 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
         //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         mockInicializeLists()
+        if(AppPreferences.chosenSubjectId != -1) currentlyChosenSubjectID = AppPreferences.chosenSubjectId
         initializeRecyclerView()
     }
 
@@ -64,7 +65,10 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
         stringAdapter = CustomAdapter(subjectList)
         subjectsRecyclerView.adapter = stringAdapter
         subjectsRecyclerView.addItemDecoration(DividerItemDecoration(subjectsRecyclerView.context, linearLayoutManager.orientation))
+        stringAdapter?.setcurrentlyChosenValue(currentlyChosenSubjectID)
+        stringAdapter?.notifyDataSetChanged()
         chosenSubject = stringAdapter?.getItem(currentlyChosenSubjectID)
+        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór przedmiotu. Zaznaczony przedmiot to $chosenSubject")
     }
 
     @OnClick(R.id.btn_back)
@@ -126,7 +130,9 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
                 when (clickCountSelect) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
                     2 -> {
-                        //textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $chosenSubject")
+                        textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $chosenSubject")
+                        AppPreferences.chosenSubject = chosenSubject!!
+                        AppPreferences.chosenSubjectId = currentlyChosenSubjectID
                         val myIntent = Intent(this@ChooseSubjectActivity, MainActivity::class.java)
                         this@ChooseSubjectActivity.startActivity(myIntent)
                         finish()
@@ -177,8 +183,10 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
         if(currentlyChosenSubjectID>subjectListSize){
             currentlyChosenSubjectID = 0
         }
+        stringAdapter?.setcurrentlyChosenValue(currentlyChosenSubjectID)
+        stringAdapter?.notifyDataSetChanged()
         chosenSubject = stringAdapter?.getItem(currentlyChosenSubjectID)
-        textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $currentlyChosenSubjectID")
+        textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $chosenSubject")
     }
 
     fun choosePreviousSubject(){
@@ -187,8 +195,10 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
         if(currentlyChosenSubjectID<0){
             currentlyChosenSubjectID = subjectListSize
         }
+        stringAdapter?.setcurrentlyChosenValue(currentlyChosenSubjectID)
+        stringAdapter?.notifyDataSetChanged()
         chosenSubject = stringAdapter?.getItem(currentlyChosenSubjectID)
-        textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $currentlyChosenSubjectID")
+        textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $chosenSubject")
     }
 
     private fun mockInicializeLists() {

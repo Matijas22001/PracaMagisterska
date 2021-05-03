@@ -16,6 +16,7 @@ import com.example.myapplication.R
 import com.example.myapplication.adapters.CustomAdapter
 import com.example.myapplication.helper_data_containers.UserImageIdsPair
 import com.example.myapplication.model.SvgImage
+import com.example.myapplication.ui.chooseSubjectActivity.ChooseSubjectActivity
 import com.example.myapplication.ui.chooseTaskActivity.ChooseTaskActivity
 import com.example.myapplication.ui.settingsActivity.SettingsActivity
 import com.example.myapplication.ui.userListActivity.UserListActivity
@@ -87,7 +88,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 when (clickCountBack) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                     2 -> {
-                        val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
+                        val myIntent = Intent(this@MainActivity, ChooseSubjectActivity::class.java)
                         this@MainActivity.startActivity(myIntent)
                         finish()
                     }

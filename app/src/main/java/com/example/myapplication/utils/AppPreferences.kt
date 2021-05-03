@@ -29,6 +29,9 @@ object AppPreferences {
     private val CURRENTLY_CHOSEN_QUESTION_ID = Pair("CURRENTLY_CHOSEN_QUESTION_ID", -1)
     private val CURRENTLY_CHOSEN_SECTION_ID = Pair("CURRENTLY_CHOSEN_SECTION_ID", -1)
     private val CURRENT_ANSWER_LIST = Pair("CURRENT_ANSWER_LIST", "")
+    private val CURRENTLY_CHOSEN_SUBJECT = Pair("CURRENTLY_CHOSEN_QUESTION", "")
+    private val CURRENTLY_CHOSEN_SUBJECT_ID = Pair("CURRENTLY_CHOSEN_QUESTION_ID", -1)
+    private val IS_USER_LOGGED_IN = Pair("IS_USER_LOGGED_IN", false)
 
     fun init(context: Context) {
         preferences = context.getSharedPreferences(NAME, MODE)
@@ -39,6 +42,25 @@ object AppPreferences {
         operation(editor)
         editor.apply()
     }
+
+    var isUserLoggedIn: Boolean
+        get() = preferences.getBoolean(IS_USER_LOGGED_IN.first, IS_USER_LOGGED_IN.second)
+        set(value) = preferences.edit {
+            it.putBoolean(IS_USER_LOGGED_IN.first, value)
+        }
+
+
+    var chosenSubjectId: Int
+        get() = preferences.getInt(CURRENTLY_CHOSEN_SUBJECT_ID.first, CURRENTLY_CHOSEN_SUBJECT_ID.second)
+        set(value) = preferences.edit {
+            it.putInt(CURRENTLY_CHOSEN_SUBJECT_ID.first, value)
+        }
+
+    var chosenSubject: String
+        get() = preferences.getString(CURRENTLY_CHOSEN_SUBJECT.first, CURRENTLY_CHOSEN_SUBJECT.second)!!
+        set(value) = preferences.edit {
+            it.putString(CURRENTLY_CHOSEN_SUBJECT.first, value)
+        }
 
     var speechSpeed: Float
         get() = preferences.getFloat(SPEECH_SPEED.first, SPEECH_SPEED.second)

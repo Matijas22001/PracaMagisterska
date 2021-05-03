@@ -3,6 +3,9 @@ package com.example.myapplication.ui.userListActivity
 import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.widget.Button
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -11,17 +14,13 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.android.volley.RequestQueue
-import com.example.myapplication.App
 import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.UserListAdapter
 import com.example.myapplication.helper_data_containers.ImageIdTestsForImage
 import com.example.myapplication.helper_data_containers.UserImageIdsPair
-import com.example.myapplication.model.Student
-import com.example.myapplication.model.SvgImage
-import com.example.myapplication.model.SvgImageDescription
-import com.example.myapplication.model.Tests
-import com.example.myapplication.ui.mainActivity.MainActivity
+import com.example.myapplication.model.*
+import com.example.myapplication.ui.chooseSubjectActivity.ChooseSubjectActivity
 import com.example.myapplication.ui.settingsActivity.SettingsActivity
 import com.example.myapplication.utils.*
 import com.google.gson.Gson
@@ -73,11 +72,31 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         if (svgDescriptionList == null) svgDescriptionList = ArrayList()
         if (imageIdTestsForImageList == null) imageIdTestsForImageList = ArrayList()
         if (AppPreferences.chosenUser != -1) currentlyChosenUserID = AppPreferences.chosenUser - 1
-        presenter.getUserListFromServer(queue!!, studentList!!)
-        initializeRecyclerView()
+        displayLoginPrompt()
+        //presenter.getUserListFromServer(queue!!, studentList!!)
+        //initializeRecyclerView()
     }
 
-
+    private fun displayLoginPrompt(){
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.login_prompt, null)
+        val etUsername = dialogView.findViewById<EditText>(R.id.et_username)
+        val etPassword = dialogView.findViewById<EditText>(R.id.et_password)
+        val dialog: AlertDialog = AlertDialog.Builder(applicationContext)
+                .setView(dialogView)
+                .setTitle("LOGOWANIE")
+                .setPositiveButton(android.R.string.ok, null)
+                .setCancelable(false)
+                .create()
+        dialog.setOnShowListener {
+            val button: Button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
+                presenter.loginUser(queue!!,etUsername.text.toString(),etPassword.text.toString(), dialog)
+                //dialog.dismiss()
+            }
+        }
+        dialog.show()
+    }
 
     private fun initializeRecyclerView() {
         linearLayoutManager = LinearLayoutManager(this)
@@ -97,6 +116,16 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         AppPreferences.userList = stringUserListSerialized
         //textToSpeechSingleton?.speakSentence("Pobieranie danych. Proszę czekać")
         getDataFromServer()
+    }
+
+    override fun userLoggedInSuccessfulLogic(loginResponse: LoginResponse, alertDialog: AlertDialog) {
+        alertDialog.dismiss()
+        presenter.getUserListFromServer(queue!!, studentList!!)
+        initializeRecyclerView()
+    }
+
+    override fun userLoggedInFailedLogic(){
+        textToSpeechSingleton?.speakSentence("Błąd logowania, podaj dane ponownie")
     }
 
     private fun getDataFromServer() {
@@ -231,7 +260,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                         if (chosenStudent != null) {
                             //textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
                             AppPreferences.chosenUser = currentlyChosenUserID + 1
-                            val myIntent = Intent(this@UserListActivity, MainActivity::class.java)
+                            val myIntent = Intent(this@UserListActivity, ChooseSubjectActivity::class.java)
                             this@UserListActivity.startActivity(myIntent)
                             finish()
                         } else {
