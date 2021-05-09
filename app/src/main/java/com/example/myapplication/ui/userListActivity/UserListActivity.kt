@@ -14,6 +14,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.android.volley.RequestQueue
+import com.example.myapplication.App.Companion.hubConnection
 import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.UserListAdapter
@@ -24,6 +25,7 @@ import com.example.myapplication.ui.chooseSubjectActivity.ChooseSubjectActivity
 import com.example.myapplication.ui.settingsActivity.SettingsActivity
 import com.example.myapplication.utils.*
 import com.google.gson.Gson
+import com.microsoft.signalr.HubConnectionBuilder
 import dagger.android.AndroidInjection
 import javax.inject.Inject
 
@@ -92,7 +94,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         dialog.setOnShowListener {
             val button: Button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             button.setOnClickListener {
-                presenter.loginUser(queue!!,etUsername.text.toString(),etPassword.text.toString(), dialog)
+                presenter.loginUser(queue!!, etUsername.text.toString(), etPassword.text.toString(), dialog)
                 //dialog.dismiss()
             }
         }
@@ -120,6 +122,8 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     override fun userLoggedInSuccessfulLogic(loginResponse: LoginResponse, alertDialog: AlertDialog) {
+        hubConnection = HubConnectionBuilder.create("URL HERE").build()
+        hubConnection?.start()
         alertDialog.dismiss()
         presenter.getUserListFromServer(queue!!, studentList!!)
         initializeRecyclerView()

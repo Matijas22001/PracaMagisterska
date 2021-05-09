@@ -1,22 +1,22 @@
 package com.example.myapplication
 
 import android.app.Application
-import android.os.Build
-import android.view.View
-import com.android.volley.RequestQueue
 import com.example.myapplication.utils.AppPreferences
-import com.example.myapplication.utils.MockedData
 import com.example.myapplication.utils.TextToSpeechSingleton
 import com.example.myapplication.view_binding.DaggerAppComponent
 import com.example.myapplication.view_binding.HawkWrapper
+import com.microsoft.signalr.HubConnection
+import com.microsoft.signalr.HubConnectionBuilder
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import javax.inject.Inject
 
+
 class App : Application(), HasAndroidInjector {
     companion object{
         var textToSpeechSingleton: TextToSpeechSingleton? = null
+        var hubConnection: HubConnection? = null
     }
 
     @JvmField
