@@ -2,7 +2,6 @@ package com.example.myapplication.utils
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
-import pl.polsl.shapeofworld.utils.CustomSharedPreferences
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -12,10 +11,8 @@ class TextToSpeechSingleton(context: Context) {
     private var ctx: Context? = context
     private var mTTS: TextToSpeech? = null
     private var TTSready = false
-    private var customSharedPreferences: CustomSharedPreferences? = null
 
     init {
-        customSharedPreferences = CustomSharedPreferences(context)
         mTTS = TextToSpeech(context) {
             TTSready = true
             configTTS()
@@ -52,7 +49,7 @@ class TextToSpeechSingleton(context: Context) {
 
     fun speakSentence(sentence: String?) {
         if (TTSready) {
-            mTTS?.setSpeechRate(customSharedPreferences?.speechSpeed!!)
+            mTTS?.setSpeechRate(AppPreferences.speechSpeed)
             mTTS?.speak(sentence, TextToSpeech.QUEUE_FLUSH, null)
         }
     }
@@ -65,7 +62,7 @@ class TextToSpeechSingleton(context: Context) {
     }
 
     fun speakSentenceWithoutDisturbing(sentence: String?) {
-        mTTS?.setSpeechRate(customSharedPreferences?.speechSpeed!!)
+        mTTS?.setSpeechRate(AppPreferences.speechSpeed)
         mTTS?.speak(sentence, TextToSpeech.QUEUE_ADD, null)
     }
 

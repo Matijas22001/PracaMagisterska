@@ -32,7 +32,11 @@ import com.example.myapplication.utils.TextToSpeechSingleton
 import com.example.myapplication.utils.ViewUtils
 import com.example.myapplication.utils.VolleySingleton
 import com.google.gson.Gson
+import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormatter
+import org.joda.time.format.ISODateTimeFormat
 import javax.inject.Inject
 
 class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, QuestionActivityView {
@@ -152,8 +156,10 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                 when (clickCountBack) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back)+" i wyślij test")
                     2 -> {
+                        Hawk.put("Test_end", getTime())
                         textToSpeechSingleton?.speakSentence("Test został wysłany")
-                        presenter.sendTestToServer(queue!!)
+                        val serverToken = Hawk.get<String>("Server_Token")
+                        presenter.sendTestToServer(queue!!, serverToken)
                     }
                 }
                 clickCountBack = 0
@@ -254,6 +260,11 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         }.start()
     }
 
+    fun getTime(): String {
+        val dt = DateTime.now()
+        val fmt: DateTimeFormatter = ISODateTimeFormat.dateTime()
+        return fmt.print(dt)
+    }
 
     override fun sendTestAndCloseActivity(){
         val myIntent = Intent(this@QuestionActivity, TestActivity::class.java)

@@ -30,7 +30,11 @@ import com.example.myapplication.utils.AppPreferences
 import com.example.myapplication.utils.TextToSpeechSingleton
 import com.example.myapplication.utils.ViewUtils
 import com.google.gson.Gson
+import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormatter
+import org.joda.time.format.ISODateTimeFormat
 import javax.inject.Inject
 
 class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView {
@@ -197,6 +201,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
                             textToSpeechSingleton?.speakSentence("Uruchamianie modułu pytań")
                             AppPreferences.chosenTest = Gson().toJson(getCurrentTest())
                             AppPreferences.chosenTestId = currentlyChosenTestId
+                            Hawk.put("Test_start", getTime())
                             val myIntent = Intent(this@TestActivity, QuestionActivity::class.java)
                             this@TestActivity.startActivity(myIntent)
                             finish()
@@ -209,6 +214,8 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
             }
         }.start()
     }
+
+
 
     @OnClick(R.id.btn_settings)
     fun goSettings(){
@@ -255,6 +262,12 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
             clickCount = 0
             selectedId = ""
         }
+    }
+
+    fun getTime(): String {
+        val dt = DateTime.now()
+        val fmt: DateTimeFormatter = ISODateTimeFormat.dateTime()
+        return fmt.print(dt)
     }
 
     private fun onSingleClick() {

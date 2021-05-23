@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.android.volley.RequestQueue
 import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.model.SvgImage
@@ -26,12 +27,15 @@ import com.example.myapplication.ui.testActivity.TestActivity
 import com.example.myapplication.utils.AppPreferences
 import com.example.myapplication.utils.TextToSpeechSingleton
 import com.example.myapplication.utils.ViewUtils
+import com.example.myapplication.utils.VolleySingleton
 import com.google.gson.Gson
+import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
 import javax.inject.Inject
 
 class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityNavigator {
 
+    var queue: RequestQueue? = null
     //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
@@ -72,6 +76,7 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
                 svgImage?.svgXML +
                 "</body></html>"
         imageWebView.loadData(svgImage?.svgXML, "text/html", "utf-8")
+
     }
 
     private fun changeSVGFile(){
@@ -88,7 +93,7 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         val indexEndOfFirstSvgTag: Int = svgImage?.svgXML?.indexOf(">")!!
         val javascriptScript = """<script type="application/ecmascript"> <![CDATA[
         function onClickEvent(evt) {
-        Android.showDetail(evt.target.getAttribute("id"));
+        Android.showDetail(evt.target.getAttribute("id"), event.clientX, event.clientY);
         }
         ]]> </script>"""
         //var content = ""
@@ -99,6 +104,11 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         }
     }
 
+    fun sendClickDetails(x: Long, y: Long, elementId: String, fileId: Int){
+        val serverToken = Hawk.get<String>("Server_Token")
+        presenter.sendImageClickDataToServer(queue!!, x, y, elementId, fileId, serverToken)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.show_svg)
@@ -106,6 +116,7 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         AndroidInjection.inject(this)
         //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
+        queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
         svgImageDescription = Gson().fromJson(AppPreferences.chosenTaskDescription, SvgImageDescription::class.java)
         tests = Gson().fromJson(AppPreferences.chosenTaskTests, Tests::class.java)
@@ -275,8 +286,9 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
             this.activity = activity
         }
         @JavascriptInterface
-        fun showDetail(content: String) {
-            Log.e("Kliknięto", "ID: $content")
+        fun showDetail(content: String, x: Long, y: Long) {
+            Log.e("Kliknięto", "ID: $content x $x y $y")
+            activity?.sendClickDetails(x, y, content, activity?.svgImage?.svgId!!)
             activity?.clickCount =  activity?.clickCount!! + 1
             activity?.selectedId = content
             activity?.mCountDownTimer?.start()

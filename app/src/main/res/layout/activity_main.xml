@@ -12,6 +12,7 @@
         android:layout_above="@id/menu_bar_layout"
         android:layout_alignParentTop="true" />
 
+
     <include
         android:id="@+id/menu_bar_layout"
         layout="@layout/menu_bar"

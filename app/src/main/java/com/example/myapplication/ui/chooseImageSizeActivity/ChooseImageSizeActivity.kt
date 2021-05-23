@@ -225,13 +225,13 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
     }
 
     private fun mockInicializeLists() {
-        sizeList.add("Grubość 10")
-        sizeList.add("Grubość 15")
-        sizeList.add("Grubość 20")
-        sizeList.add("Grubość 25")
-        sizeList.add("Grubość 30")
-        sizeList.add("Grubość 35")
-        sizeList.add("Grubość 40")
+        sizeList.add("Grubość 1")
+        sizeList.add("Grubość 2")
+        sizeList.add("Grubość 3")
+        sizeList.add("Grubość 4")
+        sizeList.add("Grubość 5")
+        sizeList.add("Grubość 6")
+        sizeList.add("Grubość 7")
     }
 
 
