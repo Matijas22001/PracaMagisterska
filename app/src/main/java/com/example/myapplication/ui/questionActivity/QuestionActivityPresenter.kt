@@ -43,7 +43,6 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
     private fun createPOSTObject(): JSONObject? {
         return try{
             val chosenAnswersForTest: ChosenAnswersForTest = Gson().fromJson(AppPreferences.answerList, ChosenAnswersForTest::class.java)
-            chosenAnswersForTest.testId = AppPreferences.chosenTestId
             chosenAnswersForTest.studentId = AppPreferences.chosenUser
             chosenAnswersForTest.startDate = Hawk.get("Test_start")
             chosenAnswersForTest.endDate = Hawk.get("Test_end")
@@ -55,10 +54,10 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
         }
     }
 
-    fun sendImageClickDataToServer(queue: RequestQueue, x: Long, y: Long, elementId: String, fileId: Int, token: String){
+    fun sendImageClickDataToServer(queue: RequestQueue, x: Long, y: Long, elementId: String, fileId: Int, testId: Int, token: String){
         val url = "http://157.158.57.124:50820/api/device/Clicks/SaveClicks"
         val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
-            Method.POST, url, createPOSTObject(x, y, elementId, fileId),
+            Method.POST, url, createPOSTObject(x, y, elementId, fileId, testId),
             Response.Listener { response ->
                 Log.i("Click", "Saved")
             }, Response.ErrorListener { error ->
@@ -73,7 +72,7 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
         queue.add(jsonObjectRequest)
     }
 
-    private fun createPOSTObject(x: Long, y: Long, elementId: String, fileId: Int): JSONObject? {
+    private fun createPOSTObject(x: Long, y: Long, elementId: String, fileId: Int, testId: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser
@@ -81,6 +80,7 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
             click.x = x
             click.y = y
             click.elementId = elementId
+            click.testId = testId
             click.timeStamp = getTime()
             val tempList: ArrayList<Click> = ArrayList()
             tempList.add(click)

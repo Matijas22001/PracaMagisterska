@@ -5,8 +5,6 @@ import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.example.myapplication.model.Click
 import com.example.myapplication.model.ClickSendObject
-import com.example.myapplication.ui.questionActivity.QuestionActivityNavigator
-import com.example.myapplication.ui.questionActivity.QuestionActivityView
 import com.example.myapplication.utils.AppPreferences
 import com.example.myapplication.utils.VolleyJsonRequest
 import com.google.gson.Gson
@@ -16,10 +14,10 @@ import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
 
 class AnswerActivityPresenter(private val view: AnswerActivityView?, private val navigator: AnswerActivityNavigator?){
-    fun sendImageClickDataToServer(queue: RequestQueue, x: Long, y: Long, elementId: String, fileId: Int, token: String){
+    fun sendImageClickDataToServer(queue: RequestQueue, x: Long, y: Long, elementId: String, fileId: Int, testId: Int, questionId: Int, token: String){
         val url = "http://157.158.57.124:50820/api/device/Clicks/SaveClicks"
         val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
-            Method.POST, url, createPOSTObject(x, y, elementId, fileId),
+            Method.POST, url, createPOSTObject(x, y, elementId, fileId, testId, questionId),
             Response.Listener { response ->
                 Log.i("Click", "Saved")
             }, Response.ErrorListener { error ->
@@ -34,7 +32,7 @@ class AnswerActivityPresenter(private val view: AnswerActivityView?, private val
         queue.add(jsonObjectRequest)
     }
 
-    private fun createPOSTObject(x: Long, y: Long, elementId: String, fileId: Int): JSONObject? {
+    private fun createPOSTObject(x: Long, y: Long, elementId: String, fileId: Int, testId: Int, questionId: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser
@@ -42,6 +40,8 @@ class AnswerActivityPresenter(private val view: AnswerActivityView?, private val
             click.x = x
             click.y = y
             click.elementId = elementId
+            click.testId = testId
+            click.questionId = questionId
             click.timeStamp = getTime()
             val tempList: ArrayList<Click> = ArrayList()
             tempList.add(click)

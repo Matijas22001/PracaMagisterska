@@ -101,7 +101,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         val indexEndOfFirstSvgTag: Int = svgImage?.svgXML?.indexOf(">")!!
         val javascriptScript = """<script type="application/ecmascript"> <![CDATA[
         function onClickEvent(evt) {
-        Android.showDetail(evt.target.getAttribute("id"));
+        Android.showDetail(evt.target.getAttribute("id"), event.clientX, event.clientY);
         }
         ]]> </script>"""
         //var content = ""
@@ -340,6 +340,12 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         return null
     }
 
+
+    fun sendClickDetails(x: Long, y: Long, elementId: String, fileId: Int, testId: Int){
+        val serverToken = Hawk.get<String>("Server_Token")
+        presenter.sendImageClickDataToServer(queue!!, x, y, elementId, fileId, testId, serverToken)
+    }
+
     class WebViewInterface {
         var activity: QuestionActivity? = null
 
@@ -347,11 +353,9 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
             this.activity = activity
         }
         @JavascriptInterface
-        fun showDetail(content: String) {
-            Log.e("Kliknięto", "ID: $content")
-            //Log.e("Kliknięto", "ID: $content")
-            //textToSpeechSingleton.speakSentence(content);
-            //customSharedPreferences.setSelectedObjectId(content)
+        fun showDetail(content: String, x: Long, y: Long) {
+            Log.e("Kliknięto", "ID: $content x $x y $y")
+            activity?.sendClickDetails(x, y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!)
             activity?.clickCount =  activity?.clickCount!! + 1
             activity?.selectedId = content
             activity?.mCountDownTimer?.start()
