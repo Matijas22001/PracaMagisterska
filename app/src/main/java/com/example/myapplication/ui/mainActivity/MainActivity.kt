@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -38,6 +37,7 @@ import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
 import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
+import io.reactivex.Single
 import org.linphone.core.*
 import org.linphone.core.tools.Log
 import javax.inject.Inject
@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     var svgImageList: ArrayList<SvgImage>? = null
     private lateinit var core: Core
     private var serverToken: String? = null
+    var hasBeenLoggedIn: Boolean = false
 
     @BindView(R.id.rv_section_list)
     lateinit var sectionRecyclerView: RecyclerView
@@ -77,20 +78,29 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
-        clearAppData()
-        if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
-        queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
-        if (userImagesIdsPairList == null) userImagesIdsPairList = ArrayList()
-        if (svgImageList == null) svgImageList = ArrayList()
-        if (svgDescriptionList == null) svgDescriptionList = ArrayList()
-        if (imageIdTestsForImageList == null) imageIdTestsForImageList = ArrayList()
-        val factory = Factory.instance()
-        factory.setDebugMode(true, "Hello Linphone")
-        core = factory.createCore(null, null, this)
-        displayLoginPrompt()
-        initializeRecyclerView()
-        signalr()
-
+        Hawk.put("Is_Logged_In", true)
+        if(Hawk.contains("Is_Logged_In")){
+            hasBeenLoggedIn = Hawk.get("Is_Logged_In")
+        }
+        if(hasBeenLoggedIn){
+            if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
+            initializeRecyclerView()
+            updateRecyclerView()
+        }else{
+            clearAppData()
+            if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
+            queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
+            if (userImagesIdsPairList == null) userImagesIdsPairList = ArrayList()
+            if (svgImageList == null) svgImageList = ArrayList()
+            if (svgDescriptionList == null) svgDescriptionList = ArrayList()
+            if (imageIdTestsForImageList == null) imageIdTestsForImageList = ArrayList()
+            val factory = Factory.instance()
+            factory.setDebugMode(true, "Hello Linphone")
+            core = factory.createCore(null, null, this)
+            displayLoginPrompt()
+            initializeRecyclerView()
+            signalr()
+        }
     }
 
 
@@ -105,7 +115,6 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
 
     override fun updateRecyclerView() {
         inicializeList()
-        textToSpeechSingleton?.speakSentence("Pobieranie danych. Proszę czekać")
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSectionID)
         stringAdapter?.notifyDataSetChanged()
         chosenSection = stringAdapter?.getItem(currentlyChosenSectionID)
@@ -385,6 +394,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             updateRecyclerView()
             login()
             hubConnection?.send("SendMessage", "uzytTest", "wiadomoscTest")
+            Hawk.put("Is_Logged_In", true)
         }
     }
 
@@ -595,8 +605,33 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     }
 
     fun signalr() {
-        hubConnection = HubConnectionBuilder.create("http://157.158.57.124:50820/api/testHub")
-            .build()
+        hubConnection = HubConnectionBuilder.create("http://157.158.57.124:50820/api/testHub").withAccessTokenProvider(
+            Single.defer { Single.just(serverToken) }).build()
+
+        hubConnection?.on("SessionStart") {
+            Log.i("SessionStarted")
+            // Przejście aplikacji w tryb zdalny czy coś
+        }
+
+        hubConnection?.on("SessionEnd") {
+            Log.i("SessionEnded")
+            // Przeczytanie komunikatu o zakończeniu sesji,
+            // powrót do listy użytkowników itp.
+        }
+
+        hubConnection?.on("StatusChange",{ userName, status ->
+            Log.i("StatusChange $userName + $status")
+            // Opcjonalna obsluga informacji o zmianie statusu jakiegoś uzytkownika
+            // np. uderzenie do api po zaktualizowaną listę uzytkowników online
+            },
+            String::class.java,
+            String::class.java)
+
+        hubConnection?.on("Click", { click ->
+            Log.i("Click $click")
+            // Obsługa wyświetlenia kliknięcia
+        }, String::class.java)
+
         hubConnection?.on(
             "ReceiveMessage", { user, message ->  Log.i("message $user + $message") },
             String::class.java,
