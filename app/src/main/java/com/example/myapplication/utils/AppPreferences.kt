@@ -32,6 +32,7 @@ object AppPreferences {
     private val CURRENTLY_CHOSEN_SUBJECT = Pair("CURRENTLY_CHOSEN_QUESTION", "")
     private val CURRENTLY_CHOSEN_SUBJECT_ID = Pair("CURRENTLY_CHOSEN_QUESTION_ID", -1)
     private val IS_USER_LOGGED_IN = Pair("IS_USER_LOGGED_IN", false)
+    private val APP_MODE = Pair("APP_MODE", 0)
 
     fun init(context: Context) {
         preferences = context.getSharedPreferences(NAME, MODE)
@@ -49,6 +50,11 @@ object AppPreferences {
             it.putBoolean(IS_USER_LOGGED_IN.first, value)
         }
 
+    var appMode: Int
+        get() = preferences.getInt(APP_MODE.first, APP_MODE.second)
+        set(value) = preferences.edit {
+            it.putInt(APP_MODE.first, value)
+        }
 
     var chosenSubjectId: Int
         get() = preferences.getInt(CURRENTLY_CHOSEN_SUBJECT_ID.first, CURRENTLY_CHOSEN_SUBJECT_ID.second)

@@ -26,6 +26,7 @@
     <uses-feature android:name="android.software.sip.voip" android:required="true" />
     <uses-feature android:name="android.hardware.wifi" android:required="true" />
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -62,6 +63,12 @@
             android:screenOrientation="landscape"/>
         <activity android:name=".ui.testActivity.TestActivity"
             android:screenOrientation="landscape"/>
+
+        <!-- The following isn't mandatory but having a foreground service prevents Android to kill the app during a call -->
+        <!-- You can create your own service that inherits from this class for simplicity or handle the foreground service yourself -->
+        <service android:name="org.linphone.core.tools.service.CoreService"
+            android:foregroundServiceType="phoneCall|camera|microphone"
+            android:stopWithTask="false" />
 
     </application>
 

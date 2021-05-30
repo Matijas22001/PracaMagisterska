@@ -81,7 +81,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
                 "<body>" +
                 svgImage?.svgXML +
                 "</body></html>"
-        imageWebView.loadData(svgImage?.svgXML, "text/html", "utf-8")
+        imageWebView.loadData(svgImage?.svgXML!!, "text/html", "utf-8")
     }
 
     private fun changeSVGFile(){

@@ -1,13 +1,16 @@
 package com.example.myapplication.ui.mainActivity
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -17,7 +20,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
 import com.android.volley.RequestQueue
-import com.example.myapplication.App.Companion.hubConnection
+import com.example.myapplication.App
 import com.example.myapplication.App.Companion.textToSpeechSingleton
 import com.example.myapplication.R
 import com.example.myapplication.adapters.CustomAdapter
@@ -29,30 +32,40 @@ import com.example.myapplication.model.SvgImageDescription
 import com.example.myapplication.model.Tests
 import com.example.myapplication.ui.chooseTaskActivity.ChooseTaskActivity
 import com.example.myapplication.ui.settingsActivity.SettingsActivity
+import com.example.myapplication.ui.userListActivity.UserListActivity
 import com.example.myapplication.utils.AppPreferences
 import com.example.myapplication.utils.ViewUtils
 import com.example.myapplication.utils.VolleySingleton
+import com.example.myapplication.utils.signalRHelper
 import com.google.gson.Gson
-import com.microsoft.signalr.HubConnection
-import com.microsoft.signalr.HubConnectionBuilder
+import com.google.gson.reflect.TypeToken
 import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
-import io.reactivex.Single
 import org.linphone.core.*
 import org.linphone.core.tools.Log
 import javax.inject.Inject
+
 
 class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigator {
 
     private lateinit var linearLayoutManager: LinearLayoutManager
     var queue: RequestQueue? = null
-    //var textToSpeechSingleton: TextToSpeechSingleton? = null
     private var clickCountBack = 0
     private var clickCountPrevious = 0
     private var clickCountNext = 0
     private var clickCountSelect = 0
     private var clickCountSettings = 0
     private var clickCountTest = 0
+    private var clickCountOne = 0
+    private var clickCountTwo = 0
+    private var clickCountThree = 0
+    private var clickCountFour = 0
+    private var clickCountFive = 0
+    private var clickCountSix = 0
+    private var clickCountSeven = 0
+    private var clickCountEight = 0
+    private var clickCountNine = 0
+    private var clickCountZero = 0
     private var sectionList: ArrayList<String> = ArrayList()
     private var chosenSection: String? = null
     private var currentlyChosenSectionID: Int = 0
@@ -62,9 +75,24 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     var imageIdTestsForImageList: ArrayList<ImageIdTestsForImage>? = null
     var userImagesIdsPairList: ArrayList<UserImageIdsPair>? = null
     var svgImageList: ArrayList<SvgImage>? = null
-    private lateinit var core: Core
     private var serverToken: String? = null
     var hasBeenLoggedIn: Boolean = false
+
+    var jeden: Button? = null
+    var dwa: Button? = null
+    var trzy: Button? = null
+    var cztery: Button? = null
+    var piec: Button? = null
+    var szesc: Button? = null
+    var siedem: Button? = null
+    var osiem: Button? = null
+    var dziewiec: Button? = null
+    var zero: Button? = null
+
+    var etUsername: TextView? = null
+    var etPassword: TextView? = null
+
+    var insertedUsername: String? = null
 
     @BindView(R.id.rv_section_list)
     lateinit var sectionRecyclerView: RecyclerView
@@ -78,12 +106,15 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
-        Hawk.put("Is_Logged_In", true)
         if(Hawk.contains("Is_Logged_In")){
             hasBeenLoggedIn = Hawk.get("Is_Logged_In")
         }
         if(hasBeenLoggedIn){
             if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
+            val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+            userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+            val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+            svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
             initializeRecyclerView()
             updateRecyclerView()
         }else{
@@ -94,12 +125,17 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             if (svgImageList == null) svgImageList = ArrayList()
             if (svgDescriptionList == null) svgDescriptionList = ArrayList()
             if (imageIdTestsForImageList == null) imageIdTestsForImageList = ArrayList()
-            val factory = Factory.instance()
-            factory.setDebugMode(true, "Hello Linphone")
-            core = factory.createCore(null, null, this)
-            displayLoginPrompt()
+            if(textToSpeechSingleton?.isTTSready() == true){
+                textToSpeechSingleton?.speakSentenceWithoutDisturbing("Prosze podać nazwę użytkownika")
+            }else{
+                val handler = Handler()
+                handler.postDelayed({
+                    textToSpeechSingleton?.speakSentenceWithoutDisturbing("Prosze podać nazwę użytkownika")
+                }, 1000)
+            }
+            displayLoginUsernamePrompt()
+            hideKeyboard(this)
             initializeRecyclerView()
-            signalr()
         }
     }
 
@@ -120,27 +156,85 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         chosenSection = stringAdapter?.getItem(currentlyChosenSectionID)
     }
 
-    private fun displayLoginPrompt(){
+    fun hideKeyboard(activity: Activity) {
+        val view = activity.findViewById<View>(android.R.id.content)
+        if (view != null) {
+            val imm = activity.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
+
+
+    private fun displayLoginUsernamePrompt(){
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.login_prompt, null)
-        val etUsername = dialogView.findViewById<EditText>(R.id.et_username)
-        val etPassword = dialogView.findViewById<EditText>(R.id.et_password)
+        etUsername = dialogView.findViewById(R.id.et_username)
+        initializeNumbers(dialogView, etUsername!!)
         val dialog: AlertDialog = AlertDialog.Builder(this)
             .setView(dialogView)
-            .setTitle("LOGOWANIE")
+            .setTitle("Nazwa Użytkownika")
             .setPositiveButton(android.R.string.ok, null)
             .setCancelable(false)
             .create()
         dialog.setOnShowListener {
             val button: Button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             button.setOnClickListener {
-                //presenter.loginUser(queue!!, etUsername.text.toString(), etPassword.text.toString(), dialog)
-                presenter.loginUser(queue!!, "405052", "1234", dialog)
+                insertedUsername = etUsername?.text.toString()
+                displayLoginPasswordPrompt()
+                //presenter.loginUser(queue!!, etUsername?.text.toString(), etPassword?.text.toString(), dialog)
                 dialog.dismiss()
             }
         }
+        hideKeyboard(this)
         dialog.show()
     }
+
+    private fun displayLoginPasswordPrompt(){
+        runOnUiThread { textToSpeechSingleton?.speakSentence("Prosze podać hasło") }
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.password_prompt, null)
+        etPassword = dialogView.findViewById(R.id.et_password)
+        initializeNumbers(dialogView, etPassword!!)
+        val dialog: AlertDialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setTitle("Hasło")
+            .setPositiveButton(android.R.string.ok, null)
+            .setCancelable(false)
+            .create()
+        dialog.setOnShowListener {
+            val button: Button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
+                presenter.loginUser(queue!!, insertedUsername!!, etPassword?.text.toString(), dialog)
+                dialog.dismiss()
+            }
+        }
+        hideKeyboard(this)
+        dialog.show()
+    }
+
+    private fun initializeNumbers(view: View?, editText: TextView){
+        jeden = view?.findViewById(R.id.jeden)
+        jeden?.setOnClickListener { insertNumber(1, editText) }
+        dwa = view?.findViewById(R.id.dwa)
+        dwa?.setOnClickListener { insertNumber(2, editText) }
+        trzy = view?.findViewById(R.id.trzy)
+        trzy?.setOnClickListener { insertNumber(3, editText) }
+        cztery = view?.findViewById(R.id.cztery)
+        cztery?.setOnClickListener { insertNumber(4, editText) }
+        piec = view?.findViewById(R.id.piec)
+        piec?.setOnClickListener { insertNumber(5, editText) }
+        szesc = view?.findViewById(R.id.szesc)
+        szesc?.setOnClickListener { insertNumber(6, editText) }
+        siedem = view?.findViewById(R.id.siedem)
+        siedem?.setOnClickListener { insertNumber(7, editText) }
+        osiem = view?.findViewById(R.id.osiem)
+        osiem?.setOnClickListener { insertNumber(8, editText) }
+        dziewiec = view?.findViewById(R.id.dziewiec)
+        dziewiec?.setOnClickListener { insertNumber(9, editText) }
+        zero = view?.findViewById(R.id.zero)
+        zero?.setOnClickListener { insertNumber(0, editText) }
+    }
+
 
     @OnClick(R.id.btn_back)
     fun goBack(){
@@ -153,9 +247,11 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                     2 -> {
                         textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia")
-                        //val myIntent = Intent(this@MainActivity, ChooseSubjectActivity::class.java)
-                        //this@MainActivity.startActivity(myIntent)
-                        //finish()
+                        if(AppPreferences.appMode == 2){
+                            val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
+                            this@MainActivity.startActivity(myIntent)
+                            finish()
+                        }
                     }
                 }
                 clickCountBack = 0
@@ -237,18 +333,18 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
 
     @OnClick(R.id.btn_test)
     fun goTest(){
-        outgoingCall()
-        //clickCountTest++
-        //object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-        //    override fun onTick(millisUntilFinished: Long) {}
-        //    override fun onFinish() {
-        //        when (clickCountTest) {
-        //            1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_T))
-        //            2 -> textToSpeechSingleton?.speakSentence("Lista działów")
-        //        }
-        //        clickCountTest = 0
-        //    }
-        //}.start()
+        //outgoingCall()
+        clickCountTest++
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountTest) {
+                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_T))
+                    2 -> textToSpeechSingleton?.speakSentence("Lista działów")
+                }
+                clickCountTest = 0
+            }
+        }.start()
     }
 
     fun chooseNextSection(){
@@ -327,13 +423,27 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     override fun userLoggedInSuccessfulLogic(loginResponse: LoginResponse, dialog: AlertDialog) {
         serverToken =  loginResponse.token
         Hawk.put("Server_Token",serverToken)
-        AppPreferences.chosenUser = loginResponse.user?.studentId!!
-        presenter.getUserImageIdsFromServer(queue!!, loginResponse.user?.studentId!!, loginResponse.token!!)
+        Hawk.put("Is_Logged_In", true)
+        textToSpeechSingleton?.speakSentence("Zalogowano pomyślnie, pobieranie danych")
+        if(loginResponse.user?.studentId!=null){
+            AppPreferences.appMode = 1
+            AppPreferences.chosenUser = loginResponse.user?.studentId!!
+            presenter.getUserImageIdsFromServer(queue!!, AppPreferences.chosenUser, loginResponse.token!!)
+        }else{
+            AppPreferences.appMode = 2
+            AppPreferences.chosenUser = loginResponse.user?.teacherId!!
+            if(AppPreferences.appMode == 2) {
+                val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
+                this@MainActivity.startActivity(myIntent)
+                finish()
+            }
+        }
         //presenter.getUserImageIdsFromServer(queue!!, 1, loginResponse.token!!)
     }
 
     override fun userLoggedInFailedLogic() {
-        displayLoginPrompt()
+        textToSpeechSingleton?.speakSentence("Podano błędne dane logowania")
+        displayLoginUsernamePrompt()
     }
 
     override fun addElementToList(userId: Int?, imageIdsList: ArrayList<Int>?) {
@@ -392,9 +502,17 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             AppPreferences.testList = stringTestListSerialized
             textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
             updateRecyclerView()
-            login()
-            hubConnection?.send("SendMessage", "uzytTest", "wiadomoscTest")
             Hawk.put("Is_Logged_In", true)
+            if(AppPreferences.appMode == 2){
+                val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
+                this@MainActivity.startActivity(myIntent)
+                finish()
+            }else{
+                login("5001")
+            }
+
+            //hubConnection?.send("SendMessage", "uzytTest", "wiadomoscTest")
+
         }
     }
 
@@ -421,33 +539,10 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         AppPreferences.chosenAnswerId = -1
     }
 
-    private fun outgoingCall() {
-        val username = "5000"
-        val domain = "157.158.57.43"
-        // As for everything we need to get the SIP URI of the remote and convert it to an Address
-        val remoteSipUri = "sip:$username@$domain"
-        val remoteAddress = Factory.instance().createAddress(remoteSipUri)
-        remoteAddress ?: return // If address parsing fails, we can't continue with outgoing call process
 
-        // We also need a CallParams object
-        // Create call params expects a Call object for incoming calls, but for outgoing we must use null safely
-        val params = core.createCallParams(null)
-        params ?: return // Same for params
-
-        // We can now configure it
-        // Here we ask for no encryption but we could ask for ZRTP/SRTP/DTLS
-        params.mediaEncryption = MediaEncryption.None
-        // If we wanted to start the call with video directly
-        //params.enableVideo(true)
-
-        // Finally we start the call
-        core.inviteAddressWithParams(remoteAddress, params)
-        // Call process can be followed in onCallStateChanged callback from core listener
-    }
-
-    private fun login() {
-        val username = "5001"
-        val password = "5001"
+    fun login(userName:String) {
+        //val username = "5001"
+        //val password = "5001"
         val domain = "157.158.57.43"
         // To configure a SIP account, we need an Account object and an AuthInfo object
         // The first one is how to connect to the proxy server, the second one stores the credentials
@@ -455,14 +550,14 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         // userID is set to null as it's the same as the username in our case
         // ha1 is set to null as we are using the clear text password. Upon first register, the hash will be computed automatically.
         // The realm will be determined automatically from the first register, as well as the algorithm
-        val authInfo = Factory.instance().createAuthInfo(username, null, password, null, null, domain, null)
+        val authInfo = Factory.instance().createAuthInfo(userName, null, userName, null, null, domain, null)
 
         // Account object replaces deprecated ProxyConfig object
         // Account object is configured through an AccountParams object that we can obtain from the Core
-        val accountParams = core.createAccountParams()
+        val accountParams = App.core.createAccountParams()
 
         // A SIP account is identified by an identity address that we can construct from the username and domain
-        val identity = Factory.instance().createAddress("sip:$username@$domain")
+        val identity = Factory.instance().createAddress("sip:$userName@$domain")
         accountParams.identityAddress = identity
 
         // We also need to configure where the proxy server is located
@@ -474,19 +569,19 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         accountParams.registerEnabled = true
 
         // Now that our AccountParams is configured, we can create the Account object
-        val account = core.createAccount(accountParams)
+        val account = App.core.createAccount(accountParams)
 
         // Now let's add our objects to the Core
-        core.addAuthInfo(authInfo)
-        core.addAccount(account)
+        App.core.addAuthInfo(authInfo)
+        App.core.addAccount(account)
 
         // Also set the newly added account as default
-        core.defaultAccount = account
+        App.core.defaultAccount = account
 
         // Allow account to be removed
 
         // To be notified of the connection status of our account, we need to add the listener to the Core
-        core.addListener(coreListener)
+        App.core.addListener(coreListener)
         // We can also register a callback on the Account object
         account.addListener { _, state, message ->
             // There is a Log helper in org.linphone.core.tools package
@@ -494,7 +589,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         }
 
         // Finally we need the Core to be started for the registration to happen (it could have been started before)
-        core.start()
+        App.core.start()
 
         if (packageManager.checkPermission(Manifest.permission.RECORD_AUDIO, packageName) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 0)
@@ -506,9 +601,9 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     private val coreListener = object: CoreListenerStub() {
         override fun onAccountRegistrationStateChanged(core: Core, account: Account, state: RegistrationState?, message: String) {
             if (state == RegistrationState.Failed || state == RegistrationState.Cleared) {
-                textToSpeechSingleton?.speakSentence("Nie udało się zalogować do serwera Voip")
+                textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych, serwer do rozmów nie jest dostępny")
             } else if (state == RegistrationState.Ok) {
-                textToSpeechSingleton?.speakSentence("Zalogowano do serwera Voip")
+                textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych, serwer do rozmów jest dostępny")
             }
         }
         override fun onAudioDeviceChanged(core: Core, audioDevice: AudioDevice) {
@@ -529,125 +624,195 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             // which includes new incoming/outgoing calls
 
             when (state) {
-                Call.State.OutgoingInit -> {
-                    // First state an outgoing call will go through
-                }
-                Call.State.OutgoingProgress -> {
-                    // Right after outgoing init
-                }
-                Call.State.OutgoingRinging -> {
-                    // This state will be reached upon reception of the 180 RINGING
-                }
-                Call.State.Connected -> {
-                    // When the 200 OK has been received
-                }
-                Call.State.StreamsRunning -> {
-                    // This state indicates the call is active.
-                    // You may reach this state multiple times, for example after a pause/resume
-                    // or after the ICE negotiation completes
-                    // Wait for the call to be connected before allowing a call update
-
-                    // Only enable toggle camera button if there is more than 1 camera and the video is enabled
-                    // We check if core.videoDevicesList.size > 2 because of the fake camera with static image created by our SDK (see below)
-                }
-                Call.State.Paused -> {
-                    // When you put a call in pause, it will became Paused
-                }
-                Call.State.PausedByRemote -> {
-                    // When the remote end of the call pauses it, it will be PausedByRemote
-                }
-                Call.State.Updating -> {
-                    // When we request a call update, for example when toggling video
-                }
-                Call.State.UpdatedByRemote -> {
-                    // When the remote requests a call update
-                }
-                Call.State.Released -> {
-                    // Call state will be released shortly after the End state
-                }
-                Call.State.Error -> {
-
-                }
+                //Call.State.OutgoingInit -> {
+                //    // First state an outgoing call will go through
+                //}
+                //Call.State.OutgoingProgress -> {
+                //    // Right after outgoing init
+                //}
+                //Call.State.OutgoingRinging -> {
+                //    // This state will be reached upon reception of the 180 RINGING
+                //}
+                //Call.State.Connected -> {
+                //    // When the 200 OK has been received
+                //}
+                //Call.State.StreamsRunning -> {
+                //    // This state indicates the call is active.
+                //    // You may reach this state multiple times, for example after a pause/resume
+                //    // or after the ICE negotiation completes
+                //    // Wait for the call to be connected before allowing a call update
+//
+                //    // Only enable toggle camera button if there is more than 1 camera and the video is enabled
+                //    // We check if core.videoDevicesList.size > 2 because of the fake camera with static image created by our SDK (see below)
+                //}
+                //Call.State.Paused -> {
+                //    // When you put a call in pause, it will became Paused
+                //}
+                //Call.State.PausedByRemote -> {
+                //    // When the remote end of the call pauses it, it will be PausedByRemote
+                //}
+                //Call.State.Updating -> {
+                //    // When we request a call update, for example when toggling video
+                //}
+                //Call.State.UpdatedByRemote -> {
+                //    // When the remote requests a call update
+                //}
+                //Call.State.Released -> {
+                //    // Call state will be released shortly after the End state
+                //}
+                //Call.State.Error -> {
+//
+                //}
                 Call.State.IncomingReceived -> {
-
+                    core.currentCall?.accept()
+                    signalRHelper.signalr(serverToken)
                 }
             }
         }
     }
-
-    private fun unregister() {
-        // Here we will disable the registration of our Account
-        val account = core.defaultAccount
-        account ?: return
-
-        val params = account.params
-        // Returned params object is const, so to make changes we first need to clone it
-        val clonedParams = params.clone()
-
-        // Now let's make our changes
-        clonedParams.registerEnabled = false
-
-        // And apply them
-        account.params = clonedParams
+    fun insertNumber(number: Int, editText: TextView){
+        when(number){
+            0 -> clickCountZero++
+            1 -> clickCountOne++
+            2 -> clickCountTwo++
+            3 -> clickCountThree++
+            4 -> clickCountFour++
+            5 -> clickCountFive++
+            6 -> clickCountSix++
+            7 -> clickCountSeven++
+            8 -> clickCountEight++
+            9 -> clickCountNine++
+        }
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountZero) {
+                    1 -> textToSpeechSingleton?.speakSentence("Zero")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "0"
+                    }
+                }
+                clickCountZero = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountOne) {
+                    1 -> textToSpeechSingleton?.speakSentence("Jeden")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "1"
+                    }
+                }
+                clickCountOne = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountTwo) {
+                    1 -> textToSpeechSingleton?.speakSentence("Dwa")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "2"
+                    }
+                }
+                clickCountTwo = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountThree) {
+                    1 -> textToSpeechSingleton?.speakSentence("Trzy")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "3"
+                    }
+                }
+                clickCountThree = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountFour) {
+                    1 -> textToSpeechSingleton?.speakSentence("Cztery")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "4"
+                    }
+                }
+                clickCountFour = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountFive) {
+                    1 -> textToSpeechSingleton?.speakSentence("Pięć")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "5"
+                    }
+                }
+                clickCountFive = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountSix) {
+                    1 -> textToSpeechSingleton?.speakSentence("Sześć")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "6"
+                    }
+                }
+                clickCountSix = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountSeven) {
+                    1 -> textToSpeechSingleton?.speakSentence("Siedem")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "7"
+                    }
+                }
+                clickCountSeven = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountEight) {
+                    1 -> textToSpeechSingleton?.speakSentence("Osiem")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "8"
+                    }
+                }
+                clickCountEight = 0
+            }
+        }.start()
+        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish() {
+                when (clickCountNine) {
+                    1 -> textToSpeechSingleton?.speakSentence("Dziewięć")
+                    2 -> {
+                        val currentText: String = editText?.text.toString()
+                        editText?.text = currentText + "9"
+                    }
+                }
+                clickCountNine = 0
+            }
+        }.start()
     }
 
-    private fun delete() {
-        // To completely remove an Account
-        val account = core.defaultAccount
-        account ?: return
-        core.removeAccount(account)
-
-        // To remove all accounts use
-        core.clearAccounts()
-
-        // Same for auth info
-        core.clearAllAuthInfo()
-    }
-
-    fun signalr() {
-        hubConnection = HubConnectionBuilder.create("http://157.158.57.124:50820/api/testHub").withAccessTokenProvider(
-            Single.defer { Single.just(serverToken) }).build()
-
-        hubConnection?.on("SessionStart") {
-            Log.i("SessionStarted")
-            // Przejście aplikacji w tryb zdalny czy coś
-        }
-
-        hubConnection?.on("SessionEnd") {
-            Log.i("SessionEnded")
-            // Przeczytanie komunikatu o zakończeniu sesji,
-            // powrót do listy użytkowników itp.
-        }
-
-        hubConnection?.on("StatusChange",{ userName, status ->
-            Log.i("StatusChange $userName + $status")
-            // Opcjonalna obsluga informacji o zmianie statusu jakiegoś uzytkownika
-            // np. uderzenie do api po zaktualizowaną listę uzytkowników online
-            },
-            String::class.java,
-            String::class.java)
-
-        hubConnection?.on("Click", { click ->
-            Log.i("Click $click")
-            // Obsługa wyświetlenia kliknięcia
-        }, String::class.java)
-
-        hubConnection?.on(
-            "ReceiveMessage", { user, message ->  Log.i("message $user + $message") },
-            String::class.java,
-            String::class.java
-        )
-        runOnUiThread {
-            HubConnectionTask().execute(hubConnection)
-        }
-    }
-
-
-    internal inner class HubConnectionTask : AsyncTask<HubConnection?, Void?, Void?>() {
-        override fun doInBackground(vararg hubConnections: HubConnection?): Void? {
-            val hubConnection = hubConnections[0]
-            hubConnection?.start()?.blockingAwait()
-            return null
-        }
-    }
 }
