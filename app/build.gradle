@@ -11,7 +11,7 @@ android {
     compileSdkVersion 30
 
     defaultConfig {
-        applicationId "com.example.myapplication"
+        applicationId "pl.polsl.MathHelper"
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 1

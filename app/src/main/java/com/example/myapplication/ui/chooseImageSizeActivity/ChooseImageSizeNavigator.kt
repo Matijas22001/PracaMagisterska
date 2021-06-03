@@ -1,3 +1,0 @@
-package com.example.myapplication.ui.chooseImageSizeActivity
-
-interface ChooseImageSizeNavigator

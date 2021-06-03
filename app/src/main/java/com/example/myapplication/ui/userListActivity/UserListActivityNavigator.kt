@@ -1,3 +1,0 @@
-package com.example.myapplication.ui.userListActivity
-
-interface UserListActivityNavigator
