@@ -53,7 +53,7 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
         }
     }
 
-    fun sendImageClickDataToServer(queue: RequestQueue, x: Long, y: Long, elementId: String, fileId: Int, testId: Int, token: String){
+    fun sendImageClickDataToServer(queue: RequestQueue, x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, token: String){
         val url = "http://157.158.57.124:50820/api/device/Clicks/SaveClicks"
         val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
             Method.POST, url, createPOSTObject(x, y, elementId, fileId, testId),
@@ -71,7 +71,7 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
         queue.add(jsonObjectRequest)
     }
 
-    private fun createPOSTObject(x: Long, y: Long, elementId: String, fileId: Int, testId: Int): JSONObject? {
+    private fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser

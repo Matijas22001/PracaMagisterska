@@ -15,7 +15,7 @@ import org.json.JSONObject
 
 class ShowSvgActivityPresenter(private val view: ShowSvgActivityView?, private val navigator: ShowSvgActivityNavigator?){
 
-    fun sendImageClickDataToServer(queue: RequestQueue, x: Long, y: Long, elementId: String, fileId: Int, token: String){
+    fun sendImageClickDataToServer(queue: RequestQueue, x: Long?, y: Long?, elementId: String, fileId: Int, token: String){
         val url = "http://157.158.57.124:50820/api/device/Clicks/SaveClicks"
         val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
             Method.POST, url, createPOSTObject(x, y, elementId, fileId),
@@ -33,7 +33,7 @@ class ShowSvgActivityPresenter(private val view: ShowSvgActivityView?, private v
         queue.add(jsonObjectRequest)
     }
 
-    private fun createPOSTObject(x: Long, y: Long, elementId: String, fileId: Int): JSONObject? {
+    private fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser

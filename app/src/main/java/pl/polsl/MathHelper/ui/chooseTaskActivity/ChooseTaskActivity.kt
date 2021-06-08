@@ -24,11 +24,18 @@ import pl.polsl.MathHelper.utils.AppPreferences
 import pl.polsl.MathHelper.utils.ViewUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
+import kotlinx.android.synthetic.main.menu_bar.*
+import org.linphone.core.*
+import org.linphone.core.tools.Log
+import pl.polsl.MathHelper.App
 import pl.polsl.MathHelper.adapters.CustomAdapter
+import pl.polsl.MathHelper.ui.userListActivity.UserListActivity
+import pl.polsl.MathHelper.utils.signalRHelper
 import javax.inject.Inject
 
-class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigator {
+class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigator, signalRHelper.SignalRCallbacks {
 
     private lateinit var linearLayoutManager: LinearLayoutManager
     //var textToSpeechSingleton: TextToSpeechSingleton? = null
@@ -48,6 +55,7 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
     var svgImageDescriptionList: ArrayList<SvgImageDescription>? = null
     var currentUserSvgImageList: ArrayList<SvgImage>? = null
     var currentUserImageIdsPair: UserImageIdsPair? = null
+    var signalRHelperClass: signalRHelper? = null
 
     @BindView(R.id.rv_task)
     lateinit var taskRecyclerView: RecyclerView
@@ -55,16 +63,23 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
     @Inject
     lateinit var presenter: ChooseTaskPresenter
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.choose_task)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
+        initializeOnClicks()
         if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
         if(AppPreferences.chosenTaskId != -1) currentlyChosenTaskID = AppPreferences.chosenTaskId
         inicializeList()
         initializeRecyclerView()
+        signalRHelperClass = signalRHelper(this)
+        val serverToken = Hawk.get<String>("Server_Token")
+        signalRHelperClass?.signalr(serverToken)
+        if(!Hawk.get<Boolean>("Is_In_Call"))login("5001")
     }
 
     private fun initializeRecyclerView(){
@@ -80,115 +95,105 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
     }
 
 
-
-    @OnClick(R.id.btn_back)
-    fun goBack(){
-        //ToDO
-        clickCountBack++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountBack) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
-                    2 -> {
-                        val myIntent = Intent(this@ChooseTaskActivity, MainActivity::class.java)
-                        this@ChooseTaskActivity.startActivity(myIntent)
-                        finish()
+    fun initializeOnClicks(){
+        btn_back.setOnClickListener {
+            clickCountBack++
+            object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountBack) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
+                        2 -> {
+                            val myIntent = Intent(this@ChooseTaskActivity, MainActivity::class.java)
+                            this@ChooseTaskActivity.startActivity(myIntent)
+                            finish()
+                        }
                     }
+                    clickCountBack = 0
                 }
-                clickCountBack = 0
-            }
-        }.start()
-    }
-
-    @OnClick(R.id.btn_previous)
-    fun goPrevious(){
-        clickCountPrevious++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountPrevious) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_previous))
-                    2 -> choosePreviousTask()
-                    3 -> choose5thPreviousTask()
-                }
-                clickCountPrevious = 0
-            }
-        }.start()
-    }
-
-    @OnClick(R.id.btn_next)
-    fun goNext(){
-        clickCountNext++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountNext) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_next))
-                    2 -> chooseNextTask()
-                    3 -> choose5thNextTask()
-                }
-                clickCountNext = 0
-            }
-        }.start()
-    }
-
-    @OnClick(R.id.btn_select)
-    fun goSelect(){
-        clickCountSelect++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountSelect) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
-                    2 -> {
-                        //textToSpeechSingleton?.speakSentence("Wybrane zadanie to $chosenTask")
-                        AppPreferences.chosenTask = Gson().toJson(getCurrentTask(chosenTask!!))
-                        AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(getCurrentTask(chosenTask!!)?.svgId!!))
-                        AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(getCurrentTask(chosenTask!!)?.svgId!!))
-                        AppPreferences.chosenTaskId = currentlyChosenTaskID
-                        val myIntent = Intent(this@ChooseTaskActivity, ShowSvgActivity::class.java)
-                        this@ChooseTaskActivity.startActivity(myIntent)
-                        finish()
+            }.start()
+        }
+        btn_previous.setOnClickListener {
+            clickCountPrevious++
+            object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountPrevious) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_previous))
+                        2 -> choosePreviousTask()
+                        3 -> choose5thPreviousTask()
                     }
+                    clickCountPrevious = 0
                 }
-                clickCountSelect = 0
-            }
-        }.start()
-    }
-
-    @OnClick(R.id.btn_settings)
-    fun goSettings(){
-        clickCountSettings++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountSettings) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_settings))
-                    2 -> {
-                        val myIntent = Intent(this@ChooseTaskActivity, SettingsActivity::class.java)
-                        this@ChooseTaskActivity.startActivity(myIntent)
+            }.start()
+        }
+        btn_next.setOnClickListener {
+            clickCountNext++
+            object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountNext) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_next))
+                        2 -> chooseNextTask()
+                        3 -> choose5thNextTask()
                     }
+                    clickCountNext = 0
                 }
-                clickCountSettings = 0
-            }
-        }.start()
+            }.start()
+        }
+        btn_select.setOnClickListener {
+            clickCountSelect++
+            object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountSelect) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
+                        2 -> {
+                            //textToSpeechSingleton?.speakSentence("Wybrane zadanie to $chosenTask")
+                            AppPreferences.chosenTask = Gson().toJson(getCurrentTask(chosenTask!!))
+                            AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(getCurrentTask(chosenTask!!)?.svgId!!))
+                            AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(getCurrentTask(chosenTask!!)?.svgId!!))
+                            AppPreferences.chosenTaskId = currentlyChosenTaskID
+                            val myIntent = Intent(this@ChooseTaskActivity, ShowSvgActivity::class.java)
+                            this@ChooseTaskActivity.startActivity(myIntent)
+                            finish()
+                        }
+                    }
+                    clickCountSelect = 0
+                }
+            }.start()
+        }
+        btn_settings.setOnClickListener {
+            clickCountSettings++
+            object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountSettings) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_settings))
+                        2 -> {
+                            val myIntent = Intent(this@ChooseTaskActivity, SettingsActivity::class.java)
+                            this@ChooseTaskActivity.startActivity(myIntent)
+                        }
+                    }
+                    clickCountSettings = 0
+                }
+            }.start()
+        }
+        btn_test.setOnClickListener {
+            clickCountTest++
+            object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountTest) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_T))
+                        2 -> textToSpeechSingleton?.speakSentence("Lista zadań")
+                    }
+                    clickCountTest = 0
+                }
+            }.start()
+        }
     }
 
-    @OnClick(R.id.btn_test)
-    fun goTest(){
-        clickCountTest++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountTest) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_T))
-                    2 -> textToSpeechSingleton?.speakSentence("Lista zadań")
-                }
-                clickCountTest = 0
-            }
-        }.start()
-    }
 
     fun chooseNextTask(){
         val taskListSize = taskList.size - 1
@@ -294,6 +299,159 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
             }
         }
         return null
+    }
+
+    fun login(userName:String) {
+        val domain = "157.158.57.43"
+        val authInfo = Factory.instance().createAuthInfo(userName, null, userName, null, null, domain, null)
+        val accountParams = App.core.createAccountParams()
+        val identity = Factory.instance().createAddress("sip:$userName@$domain")
+        accountParams.identityAddress = identity
+        val address = Factory.instance().createAddress("sip:$domain")
+        address?.transport = TransportType.Udp
+        accountParams.serverAddress = address
+        accountParams.registerEnabled = true
+        val account = App.core.createAccount(accountParams)
+        App.core.addAuthInfo(authInfo)
+        App.core.addAccount(account)
+        App.core.defaultAccount = account
+        App.core.addListener(coreListener)
+        account.addListener { _, state, message ->
+            Log.i("[Account] Registration state changed: $state, $message")
+        }
+        // Finally we need the Core to be started for the registration to happen (it could have been started before)
+        App.core.start()
+    }
+
+    private val coreListener = object: CoreListenerStub() {
+        override fun onAccountRegistrationStateChanged(core: Core, account: Account, state: RegistrationState?, message: String) {
+            if (state == RegistrationState.Failed || state == RegistrationState.Cleared) {
+                android.util.Log.i("Tag","Serwer do rozmów nie jest dostępny")
+            } else if (state == RegistrationState.Ok) {
+                android.util.Log.i("Tag","Serwer do rozmów jest dostępny")
+
+            }
+        }
+        override fun onCallStateChanged(
+            core: Core,
+            call: Call,
+            state: Call.State?,
+            message: String
+        ) {
+            when (state) {
+                Call.State.IncomingReceived -> {
+                    reactToCall()
+                }
+            }
+        }
+    }
+
+
+
+
+
+    private fun reactToCall(){
+        btn_test.isEnabled = false
+        btn_next.isEnabled = false
+        btn_previous.isEnabled = false
+        btn_settings.isEnabled = false
+        //core.currentCall?.accept()
+        btn_select.setOnClickListener {
+            clickCountSelect++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountSelect) {
+                        1 -> textToSpeechSingleton?.speakSentence("Odbierz")
+                        2 -> {
+                            App.core.currentCall?.accept()
+                            Hawk.put("Is_In_Call",true)
+                            resetViewState()
+                        }
+                    }
+                    clickCountSelect = 0
+                }
+            }.start()
+        }
+        btn_back.setOnClickListener {
+            clickCountBack++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountBack) {
+                        1 -> textToSpeechSingleton?.speakSentence("Odrzuć")
+                        2 -> {
+                            App.core.currentCall?.decline(Reason.Declined)
+                            Hawk.put("Is_In_Call",false)
+                            resetViewState()
+                        }
+                    }
+                    clickCountBack = 0
+                }
+            }.start()
+        }
+    }
+
+    private fun resetViewState(){
+        btn_test.isEnabled = true
+        btn_next.isEnabled = true
+        btn_previous.isEnabled = true
+        btn_settings.isEnabled = true
+        btn_select.setOnClickListener {
+            clickCountSelect++
+            object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountSelect) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
+                        2 -> {
+                            //textToSpeechSingleton?.speakSentence("Wybrane zadanie to $chosenTask")
+                            AppPreferences.chosenTask = Gson().toJson(getCurrentTask(chosenTask!!))
+                            AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(getCurrentTask(chosenTask!!)?.svgId!!))
+                            AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(getCurrentTask(chosenTask!!)?.svgId!!))
+                            AppPreferences.chosenTaskId = currentlyChosenTaskID
+                            val myIntent = Intent(this@ChooseTaskActivity, ShowSvgActivity::class.java)
+                            this@ChooseTaskActivity.startActivity(myIntent)
+                            finish()
+                        }
+                    }
+                    clickCountSelect = 0
+                }
+            }.start()
+        }
+        btn_back.setOnClickListener {
+            clickCountBack++
+            object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountBack) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
+                        2 -> {
+                            val myIntent = Intent(this@ChooseTaskActivity, MainActivity::class.java)
+                            this@ChooseTaskActivity.startActivity(myIntent)
+                            finish()
+                        }
+                    }
+                    clickCountBack = 0
+                }
+            }.start()
+        }
+    }
+
+    override fun onSessionStart() {
+        Log.i("","SessionStarted")
+    }
+
+    override fun onSessionEnd() {
+        Log.i("","SessionEnded")
+    }
+
+    override fun onStatusChange(userName: String, status: String) {
+        Log.i("","StatusChange $userName + $status")
+    }
+
+    override fun onClick(click: String) {
+        Log.i("","Click $click")
     }
 
     override fun showMessage(resId: Int) {}

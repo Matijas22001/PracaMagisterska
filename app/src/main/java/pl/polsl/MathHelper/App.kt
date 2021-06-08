@@ -35,6 +35,8 @@ class App : Application(), HasAndroidInjector {
         AppPreferences.init(this)
         HawkWrapper.init(applicationContext)
         Hawk.put("Is_Logged_In", false)
+        Hawk.put("Is_In_Call",false)
+        if(Hawk.contains("Teacher_phone_number")){ Hawk.delete("Teacher_phone_number") }
         DaggerAppComponent.builder()
             .application(this)
             ?.build()

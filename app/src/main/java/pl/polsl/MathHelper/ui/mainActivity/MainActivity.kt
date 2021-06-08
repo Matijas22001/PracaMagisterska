@@ -26,8 +26,10 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
+import kotlinx.android.synthetic.main.menu_bar.*
 import org.linphone.core.*
 import org.linphone.core.tools.Log
+import pl.polsl.MathHelper.App
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.helper_data_containers.ImageIdTestsForImage
 import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
@@ -101,6 +103,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     var insertedUsername: String? = null
 
     var signalRHelperClass: signalRHelper? = null
+    var loginResponseSaved: LoginResponse? = null
 
     @BindView(R.id.rv_section_list)
     lateinit var sectionRecyclerView: RecyclerView
@@ -115,6 +118,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
         signalRHelperClass = signalRHelper(this)
+        initializeOnClicks()
         if(Hawk.contains("Is_Logged_In")){
             hasBeenLoggedIn = Hawk.get("Is_Logged_In")
         }
@@ -174,6 +178,10 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        ViewUtils.fullScreenCall(window)
+    }
 
     private fun displayLoginUsernamePrompt(){
         val inflater = layoutInflater
@@ -269,117 +277,107 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         czytaj?.setOnClickListener { insertNumber(11, editText) }
     }
 
-
-    @OnClick(R.id.btn_back)
-    fun goBack(){
-        //ToDO
-        clickCountBack++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountBack) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
-                    2 -> {
-                        textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia")
-                        if(AppPreferences.appMode == 2){
-                            val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
+    fun initializeOnClicks(){
+        btn_back.setOnClickListener {
+            clickCountBack++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountBack) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
+                        2 -> {
+                            textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia")
+                            if (AppPreferences.appMode == 2) {
+                                val myIntent =
+                                    Intent(this@MainActivity, UserListActivity::class.java)
+                                this@MainActivity.startActivity(myIntent)
+                                finish()
+                            }
+                        }
+                    }
+                    clickCountBack = 0
+                }
+            }.start()
+        }
+        btn_previous.setOnClickListener {
+            clickCountPrevious++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountPrevious) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_previous))
+                        2 -> choosePreviousSection()
+                        3 -> choose5thPreviousSection()
+                    }
+                    clickCountPrevious = 0
+                }
+            }.start()
+        }
+        btn_next.setOnClickListener {
+            clickCountNext++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountNext) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_next))
+                        2 -> chooseNextSection()
+                        3 -> choose5thNextSection()
+                    }
+                    clickCountNext = 0
+                }
+            }.start()
+        }
+        btn_select.setOnClickListener {
+            clickCountSelect++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountSelect) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
+                        2 -> {
+                            //textToSpeechSingleton?.speakSentence("Wybrany dział to $chosenSection")
+                            AppPreferences.chosenSection = chosenSection!!
+                            AppPreferences.chosenSectionId = currentlyChosenSectionID
+                            val myIntent = Intent(this@MainActivity, ChooseTaskActivity::class.java)
                             this@MainActivity.startActivity(myIntent)
                             finish()
                         }
                     }
+                    clickCountSelect = 0
                 }
-                clickCountBack = 0
-            }
-        }.start()
-    }
-
-    @OnClick(R.id.btn_previous)
-    fun goPrevious(){
-        clickCountPrevious++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountPrevious) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_previous))
-                    2 -> choosePreviousSection()
-                    3 -> choose5thPreviousSection()
-                }
-                clickCountPrevious = 0
-            }
-        }.start()
-    }
-
-    @OnClick(R.id.btn_next)
-    fun goNext(){
-        clickCountNext++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountNext) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_next))
-                    2 -> chooseNextSection()
-                    3 -> choose5thNextSection()
-                }
-                clickCountNext = 0
-            }
-        }.start()
-    }
-
-    @OnClick(R.id.btn_select)
-    fun goSelect(){
-        clickCountSelect++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountSelect) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
-                    2 -> {
-                        //textToSpeechSingleton?.speakSentence("Wybrany dział to $chosenSection")
-                        AppPreferences.chosenSection = chosenSection!!
-                        AppPreferences.chosenSectionId = currentlyChosenSectionID
-                        val myIntent = Intent(this@MainActivity, ChooseTaskActivity::class.java)
-                        this@MainActivity.startActivity(myIntent)
-                        finish()
+            }.start()
+        }
+        btn_settings.setOnClickListener {
+            clickCountSettings++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountSettings) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_settings))
+                        2 -> {
+                            val myIntent = Intent(this@MainActivity, SettingsActivity::class.java)
+                            this@MainActivity.startActivity(myIntent)
+                        }
                     }
+                    clickCountSettings = 0
                 }
-                clickCountSelect = 0
-            }
-        }.start()
-    }
-
-    @OnClick(R.id.btn_settings)
-    fun goSettings(){
-        clickCountSettings++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountSettings) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_settings))
-                    2 -> {
-                        val myIntent = Intent(this@MainActivity, SettingsActivity::class.java)
-                        this@MainActivity.startActivity(myIntent)
+            }.start()
+        }
+        btn_test.setOnClickListener {
+            clickCountTest++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountTest) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_T))
+                        2 -> textToSpeechSingleton?.speakSentence("Lista działów")
                     }
+                    clickCountTest = 0
                 }
-                clickCountSettings = 0
-            }
-        }.start()
+            }.start()
+        }
     }
 
-    @OnClick(R.id.btn_test)
-    fun goTest(){
-        //outgoingCall()
-        clickCountTest++
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish() {
-                when (clickCountTest) {
-                    1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_T))
-                    2 -> textToSpeechSingleton?.speakSentence("Lista działów")
-                }
-                clickCountTest = 0
-            }
-        }.start()
-    }
 
     fun chooseNextSection(){
         val sectionListSize = sectionList.size - 1
@@ -455,6 +453,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
 
 
     override fun userLoggedInSuccessfulLogic(loginResponse: LoginResponse, dialog: AlertDialog) {
+        loginResponseSaved = loginResponse
         serverToken =  loginResponse.token
         Hawk.put("Server_Token",serverToken)
         Hawk.put("Is_Logged_In", true)
@@ -468,6 +467,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             AppPreferences.appMode = 2
             AppPreferences.chosenUser = loginResponse.user?.teacherId!!
             if(AppPreferences.appMode == 2) {
+                if(loginResponseSaved?.user?.voipNumber!= null) Hawk.put("Teacher_phone_number", loginResponseSaved?.user?.voipNumber)
                 val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
                 this@MainActivity.startActivity(myIntent)
                 finish()
@@ -535,15 +535,17 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         if (imageId == imageIdTestsForImageList?.last()?.imageId) {
             val stringTestListSerialized = Gson().toJson(imageIdTestsForImageList)
             AppPreferences.testList = stringTestListSerialized
-            textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
+            //textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
             updateRecyclerView()
             Hawk.put("Is_Logged_In", true)
             if(AppPreferences.appMode == 2){
+                if(loginResponseSaved?.user?.voipNumber!= null) Hawk.put("Teacher_phone_number", loginResponseSaved?.user?.voipNumber)
                 val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
                 this@MainActivity.startActivity(myIntent)
                 finish()
             }else{
-                login("5001")
+                if(loginResponseSaved?.user?.voipNumber!= null) login(loginResponseSaved?.user?.voipNumber!!)
+                textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
             }
             signalRHelperClass?.StartSession(AppPreferences.chosenUser)
             //hubConnection?.send("SendMessage", "uzytTest", "wiadomoscTest")
@@ -575,78 +577,34 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
 
 
     fun login(userName:String) {
-        //val username = "5001"
-        //val password = "5001"
         val domain = "157.158.57.43"
-        // To configure a SIP account, we need an Account object and an AuthInfo object
-        // The first one is how to connect to the proxy server, the second one stores the credentials
-        // The auth info can be created from the Factory as it's only a data class
-        // userID is set to null as it's the same as the username in our case
-        // ha1 is set to null as we are using the clear text password. Upon first register, the hash will be computed automatically.
-        // The realm will be determined automatically from the first register, as well as the algorithm
         val authInfo = Factory.instance().createAuthInfo(userName, null, userName, null, null, domain, null)
-
-        // Account object replaces deprecated ProxyConfig object
-        // Account object is configured through an AccountParams object that we can obtain from the Core
-        val accountParams = pl.polsl.MathHelper.App.core.createAccountParams()
-
-        // A SIP account is identified by an identity address that we can construct from the username and domain
+        val accountParams = App.core.createAccountParams()
         val identity = Factory.instance().createAddress("sip:$userName@$domain")
         accountParams.identityAddress = identity
-
-        // We also need to configure where the proxy server is located
         val address = Factory.instance().createAddress("sip:$domain")
-        // We use the Address object to easily set the transport protocol
         address?.transport = TransportType.Udp
         accountParams.serverAddress = address
-        // And we ensure the account will start the registration process
         accountParams.registerEnabled = true
-
-        // Now that our AccountParams is configured, we can create the Account object
-        val account = pl.polsl.MathHelper.App.core.createAccount(accountParams)
-
-        // Now let's add our objects to the Core
-        pl.polsl.MathHelper.App.core.addAuthInfo(authInfo)
-        pl.polsl.MathHelper.App.core.addAccount(account)
-
-        // Also set the newly added account as default
-        pl.polsl.MathHelper.App.core.defaultAccount = account
-
-        // Allow account to be removed
-
-        // To be notified of the connection status of our account, we need to add the listener to the Core
-        pl.polsl.MathHelper.App.core.addListener(coreListener)
-        // We can also register a callback on the Account object
+        val account = App.core.createAccount(accountParams)
+        App.core.addAuthInfo(authInfo)
+        App.core.addAccount(account)
+        App.core.defaultAccount = account
+        App.core.addListener(coreListener)
         account.addListener { _, state, message ->
-            // There is a Log helper in org.linphone.core.tools package
             Log.i("[Account] Registration state changed: $state, $message")
         }
-
         // Finally we need the Core to be started for the registration to happen (it could have been started before)
-        pl.polsl.MathHelper.App.core.start()
-
-        if (packageManager.checkPermission(Manifest.permission.RECORD_AUDIO, packageName) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 0)
-            return
-        }
-
+        App.core.start()
     }
 
     private val coreListener = object: CoreListenerStub() {
         override fun onAccountRegistrationStateChanged(core: Core, account: Account, state: RegistrationState?, message: String) {
             if (state == RegistrationState.Failed || state == RegistrationState.Cleared) {
-                textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych, serwer do rozmów nie jest dostępny")
+                android.util.Log.i("Tag","Serwer do rozmów nie jest dostępny")
             } else if (state == RegistrationState.Ok) {
-                textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych, serwer do rozmów jest dostępny")
+                android.util.Log.i("Tag","Serwer do rozmów jest dostępny")
             }
-        }
-        override fun onAudioDeviceChanged(core: Core, audioDevice: AudioDevice) {
-            // This callback will be triggered when a successful audio device has been changed
-        }
-
-        override fun onAudioDevicesListUpdated(core: Core) {
-            // This callback will be triggered when the available devices list has changed,
-            // for example after a bluetooth headset has been connected/disconnected.
         }
         override fun onCallStateChanged(
             core: Core,
@@ -654,56 +612,14 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             state: Call.State?,
             message: String
         ) {
-            // This function will be called each time a call state changes,
-            // which includes new incoming/outgoing calls
-
             when (state) {
-                //Call.State.OutgoingInit -> {
-                //    // First state an outgoing call will go through
-                //}
-                //Call.State.OutgoingProgress -> {
-                //    // Right after outgoing init
-                //}
-                //Call.State.OutgoingRinging -> {
-                //    // This state will be reached upon reception of the 180 RINGING
-                //}
-                //Call.State.Connected -> {
-                //    // When the 200 OK has been received
-                //}
-                //Call.State.StreamsRunning -> {
-                //    // This state indicates the call is active.
-                //    // You may reach this state multiple times, for example after a pause/resume
-                //    // or after the ICE negotiation completes
-                //    // Wait for the call to be connected before allowing a call update
-//
-                //    // Only enable toggle camera button if there is more than 1 camera and the video is enabled
-                //    // We check if core.videoDevicesList.size > 2 because of the fake camera with static image created by our SDK (see below)
-                //}
-                //Call.State.Paused -> {
-                //    // When you put a call in pause, it will became Paused
-                //}
-                //Call.State.PausedByRemote -> {
-                //    // When the remote end of the call pauses it, it will be PausedByRemote
-                //}
-                //Call.State.Updating -> {
-                //    // When we request a call update, for example when toggling video
-                //}
-                //Call.State.UpdatedByRemote -> {
-                //    // When the remote requests a call update
-                //}
-                //Call.State.Released -> {
-                //    // Call state will be released shortly after the End state
-                //}
-                //Call.State.Error -> {
-//
-                //}
                 Call.State.IncomingReceived -> {
-                    core.currentCall?.accept()
-                    //signalRHelperClass?.signalr(serverToken)
+                    reactToCall()
                 }
             }
         }
     }
+
     fun insertNumber(number: Int, editText: TextView){
         when(number){
             0 -> clickCountZero++
@@ -878,20 +794,108 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         }.start()
     }
 
+    private fun reactToCall(){
+        btn_test.isEnabled = false
+        btn_next.isEnabled = false
+        btn_previous.isEnabled = false
+        btn_settings.isEnabled = false
+        //core.currentCall?.accept()
+        btn_select.setOnClickListener {
+            clickCountSelect++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountSelect) {
+                        1 -> textToSpeechSingleton?.speakSentence("Odbierz")
+                        2 -> {
+                            App.core.currentCall?.accept()
+                            Hawk.put("Is_In_Call",true)
+                            resetViewState()
+                        }
+                    }
+                    clickCountSelect = 0
+                }
+            }.start()
+        }
+        btn_back.setOnClickListener {
+            clickCountBack++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountBack) {
+                        1 -> textToSpeechSingleton?.speakSentence("Odrzuć")
+                        2 -> {
+                            App.core.currentCall?.decline(Reason.Declined)
+                            Hawk.put("Is_In_Call",false)
+                            resetViewState()
+                        }
+                    }
+                    clickCountBack = 0
+                }
+            }.start()
+        }
+    }
+
+    private fun resetViewState(){
+        btn_test.isEnabled = true
+        btn_next.isEnabled = true
+        btn_previous.isEnabled = true
+        btn_settings.isEnabled = true
+        btn_select.setOnClickListener {
+            clickCountSelect++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountSelect) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
+                        2 -> {
+                            //textToSpeechSingleton?.speakSentence("Wybrany dział to $chosenSection")
+                            AppPreferences.chosenSection = chosenSection!!
+                            AppPreferences.chosenSectionId = currentlyChosenSectionID
+                            val myIntent = Intent(this@MainActivity, ChooseTaskActivity::class.java)
+                            this@MainActivity.startActivity(myIntent)
+                            finish()
+                        }
+                    }
+                    clickCountSelect = 0
+                }
+            }.start() }
+        btn_back.setOnClickListener {  clickCountBack++
+            object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+                override fun onTick(millisUntilFinished: Long) {}
+                override fun onFinish() {
+                    when (clickCountBack) {
+                        1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
+                        2 -> {
+                            textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia")
+                            if (AppPreferences.appMode == 2) {
+                                val myIntent =
+                                    Intent(this@MainActivity, UserListActivity::class.java)
+                                this@MainActivity.startActivity(myIntent)
+                                finish()
+                            }
+                        }
+                    }
+                    clickCountBack = 0
+                }
+            }.start()
+        }
+    }
+
     override fun onSessionStart() {
-        Log.i("SessionStarted")
+        Log.i("","SessionStarted")
     }
 
     override fun onSessionEnd() {
-        Log.i("SessionEnded")
+        Log.i("","SessionEnded")
     }
 
     override fun onStatusChange(userName: String, status: String) {
-        Log.i("StatusChange $userName + $status")
+        Log.i("","StatusChange $userName + $status")
     }
 
     override fun onClick(click: String) {
-        Log.i("Click $click")
+        Log.i("","Click $click")
     }
 
 }

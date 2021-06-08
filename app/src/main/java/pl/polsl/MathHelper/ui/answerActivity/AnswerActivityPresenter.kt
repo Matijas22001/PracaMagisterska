@@ -14,7 +14,7 @@ import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
 
 class AnswerActivityPresenter(private val view: AnswerActivityView?, private val navigator: AnswerActivityNavigator?){
-    fun sendImageClickDataToServer(queue: RequestQueue, x: Long, y: Long, elementId: String, fileId: Int, testId: Int, questionId: Int, token: String){
+    fun sendImageClickDataToServer(queue: RequestQueue, x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, questionId: Int, token: String){
         val url = "http://157.158.57.124:50820/api/device/Clicks/SaveClicks"
         val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
             Method.POST, url, createPOSTObject(x, y, elementId, fileId, testId, questionId),
@@ -32,7 +32,7 @@ class AnswerActivityPresenter(private val view: AnswerActivityView?, private val
         queue.add(jsonObjectRequest)
     }
 
-    private fun createPOSTObject(x: Long, y: Long, elementId: String, fileId: Int, testId: Int, questionId: Int): JSONObject? {
+    private fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, questionId: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser

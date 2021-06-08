@@ -28,4 +28,7 @@ class User: Serializable {
 
     @SerializedName("teacherId")
     var teacherId: Int? = null
+
+    @SerializedName("voipNumber")
+    var voipNumber: String? = null
 }

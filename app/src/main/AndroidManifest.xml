@@ -6,8 +6,6 @@
 
     <dist:module dist:instant="true" />
 
-
-    <uses-permission android:name="android.permission.USE_SIP" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
@@ -21,11 +19,6 @@
     <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-feature android:name="android.hardware.microphone" android:required="true" />
-
-    <uses-feature android:name="android.software.sip.voip" android:required="true" />
-    <uses-feature android:name="android.hardware.wifi" android:required="true" />
-    <uses-feature android:name="android.hardware.microphone" android:required="true" />
 
     <application
         android:name="pl.polsl.MathHelper.App"
@@ -35,6 +28,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:hardwareAccelerated="true"
         android:networkSecurityConfig="@xml/network_security_config">
 
 
@@ -64,8 +58,6 @@
         <activity android:name="pl.polsl.MathHelper.ui.testActivity.TestActivity"
             android:screenOrientation="landscape"/>
 
-        <!-- The following isn't mandatory but having a foreground service prevents Android to kill the app during a call -->
-        <!-- You can create your own service that inherits from this class for simplicity or handle the foreground service yourself -->
         <service android:name="org.linphone.core.tools.service.CoreService"
             android:foregroundServiceType="phoneCall|camera|microphone"
             android:stopWithTask="false" />
