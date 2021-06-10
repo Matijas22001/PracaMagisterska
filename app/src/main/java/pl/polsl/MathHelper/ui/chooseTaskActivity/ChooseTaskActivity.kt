@@ -63,7 +63,7 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
     @Inject
     lateinit var presenter: ChooseTaskPresenter
 
-
+    var currentRemoteStudentId: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,12 +74,28 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         initializeOnClicks()
         if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
         if(AppPreferences.chosenTaskId != -1) currentlyChosenTaskID = AppPreferences.chosenTaskId
+        if(Hawk.contains("Currently_chosen_user_id"))
+        {
+            currentRemoteStudentId = Hawk.get<Int>("Currently_chosen_user_id")
+        }
         inicializeList()
         initializeRecyclerView()
         signalRHelperClass = signalRHelper(this)
         val serverToken = Hawk.get<String>("Server_Token")
         signalRHelperClass?.signalr(serverToken)
-        if(!Hawk.get<Boolean>("Is_In_Call"))login("5001")
+        if(!Hawk.get<Boolean>("Is_In_Call")){
+            var phoneNumber: String? = null
+            if (AppPreferences.appMode == 2){
+                if(Hawk.contains("Teacher_phone_number")){
+                    phoneNumber = Hawk.get<String>("Teacher_phone_number")
+                }
+            } else{
+                if(Hawk.contains("Student_phone_number")) {
+                    phoneNumber = Hawk.get<String>("Student_phone_number")
+                }
+            }
+            if(phoneNumber!= null)login(phoneNumber)
+        }
     }
 
     private fun initializeRecyclerView(){
@@ -254,8 +270,13 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         val imageIdTestsForImageType = object : TypeToken<List<ImageIdTestsForImage>>() {}.type
         imageTestList = gson.fromJson<ArrayList<ImageIdTestsForImage>>(AppPreferences.testList, imageIdTestsForImageType)
         for(item in userImagesIdsPairList!!){
-            if(AppPreferences.chosenUser == item.userId)
-                currentUserImageIdsPair = item
+            if(currentRemoteStudentId!=null && AppPreferences.appMode == 2){
+                if(currentRemoteStudentId == item.userId)
+                    currentUserImageIdsPair = item
+            }else{
+                if(AppPreferences.chosenUser == item.userId)
+                    currentUserImageIdsPair = item
+            }
         }
         currentUserSvgImageList?.clear()
         for(item in currentUserImageIdsPair?.svgIdListFromServer!!){

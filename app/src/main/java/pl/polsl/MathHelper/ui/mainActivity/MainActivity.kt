@@ -105,6 +105,8 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     var signalRHelperClass: signalRHelper? = null
     var loginResponseSaved: LoginResponse? = null
 
+    var currentRemoteStudentId: Int? = null
+
     @BindView(R.id.rv_section_list)
     lateinit var sectionRecyclerView: RecyclerView
 
@@ -119,25 +121,42 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         ViewUtils.fullScreenCall(window)
         signalRHelperClass = signalRHelper(this)
         initializeOnClicks()
+        if (userImagesIdsPairList == null) userImagesIdsPairList = ArrayList()
+        if (svgImageList == null) svgImageList = ArrayList()
+        if (svgDescriptionList == null) svgDescriptionList = ArrayList()
+        if (imageIdTestsForImageList == null) imageIdTestsForImageList = ArrayList()
         if(Hawk.contains("Is_Logged_In")){
             hasBeenLoggedIn = Hawk.get("Is_Logged_In")
         }
+        if(Hawk.contains("Currently_chosen_user_id"))
+        {
+            currentRemoteStudentId = Hawk.get<Int>("Currently_chosen_user_id")
+        }
         if(hasBeenLoggedIn){
             if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
-            val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
-            userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
-            val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
-            svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
-            initializeRecyclerView()
-            updateRecyclerView()
+            queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
+            if(currentRemoteStudentId!=null){
+                textToSpeechSingleton?.speakSentence("Pobieranie danych, proszę czekać")
+                val token = Hawk.get<String>("Server_Token")
+                serverToken = token
+                presenter.getUserImageIdsFromServer(queue!!, currentRemoteStudentId!!, token)
+                initializeRecyclerView()
+            }else{
+                //val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+                //userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+                //val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+                //svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+                textToSpeechSingleton?.speakSentence("Pobieranie danych, proszę czekać")
+                val token = Hawk.get<String>("Server_Token")
+                serverToken = token
+                presenter.getUserImageIdsFromServer(queue!!, AppPreferences.chosenUser, token)
+                initializeRecyclerView()
+                //updateRecyclerView()
+            }
         }else{
             clearAppData()
             if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
             queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
-            if (userImagesIdsPairList == null) userImagesIdsPairList = ArrayList()
-            if (svgImageList == null) svgImageList = ArrayList()
-            if (svgDescriptionList == null) svgDescriptionList = ArrayList()
-            if (imageIdTestsForImageList == null) imageIdTestsForImageList = ArrayList()
             if(textToSpeechSingleton?.isTTSready() == true){
                 textToSpeechSingleton?.speakSentenceWithoutDisturbing("Prosze podać nazwę użytkownika")
             }else{
@@ -286,12 +305,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                     when (clickCountBack) {
                         1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                         2 -> {
-                            textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia")
                             if (AppPreferences.appMode == 2) {
-                                val myIntent =
-                                    Intent(this@MainActivity, UserListActivity::class.java)
+                                signalRHelperClass?.EndSession()
+                                val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
                                 this@MainActivity.startActivity(myIntent)
                                 finish()
+                            }else{
+                                textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia")
                             }
                         }
                     }
@@ -457,13 +477,14 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         serverToken =  loginResponse.token
         Hawk.put("Server_Token",serverToken)
         Hawk.put("Is_Logged_In", true)
-        textToSpeechSingleton?.speakSentence("Zalogowano pomyślnie, pobieranie danych")
         signalRHelperClass?.signalr(serverToken)
         if(loginResponse.user?.studentId!=null){
+            textToSpeechSingleton?.speakSentence("Zalogowano pomyślnie, pobieranie danych")
             AppPreferences.appMode = 1
             AppPreferences.chosenUser = loginResponse.user?.studentId!!
             presenter.getUserImageIdsFromServer(queue!!, AppPreferences.chosenUser, loginResponse.token!!)
         }else{
+            textToSpeechSingleton?.speakSentence("Zalogowano pomyślnie, przechodzenie do modułu wyboru ucznia")
             AppPreferences.appMode = 2
             AppPreferences.chosenUser = loginResponse.user?.teacherId!!
             if(AppPreferences.appMode == 2) {
@@ -537,18 +558,20 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             AppPreferences.testList = stringTestListSerialized
             //textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
             updateRecyclerView()
-            Hawk.put("Is_Logged_In", true)
+            textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
             if(AppPreferences.appMode == 2){
-                if(loginResponseSaved?.user?.voipNumber!= null) Hawk.put("Teacher_phone_number", loginResponseSaved?.user?.voipNumber)
-                val myIntent = Intent(this@MainActivity, UserListActivity::class.java)
-                this@MainActivity.startActivity(myIntent)
-                finish()
+
+                if(Hawk.contains("Teacher_phone_number")){
+                    val phoneNumber = Hawk.get<String>("Teacher_phone_number")
+                    login(phoneNumber)
+                }
             }else{
-                if(loginResponseSaved?.user?.voipNumber!= null) login(loginResponseSaved?.user?.voipNumber!!)
-                textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
+                if(loginResponseSaved?.user?.voipNumber!= null) {
+                    Hawk.put("Student_phone_number", loginResponseSaved?.user?.voipNumber)
+                    login(loginResponseSaved?.user?.voipNumber!!)
+                }
             }
-            signalRHelperClass?.StartSession(AppPreferences.chosenUser)
-            //hubConnection?.send("SendMessage", "uzytTest", "wiadomoscTest")
+
         }
     }
 

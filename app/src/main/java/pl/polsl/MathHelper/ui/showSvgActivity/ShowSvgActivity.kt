@@ -4,14 +4,16 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.speech.tts.TextToSpeech
 import android.util.Base64
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.webkit.*
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import butterknife.ButterKnife
-import butterknife.OnClick
 import com.android.volley.RequestQueue
 import com.google.gson.Gson
 import com.orhanobut.hawk.Hawk
@@ -28,13 +30,9 @@ import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
 import pl.polsl.MathHelper.model.*
 import pl.polsl.MathHelper.ui.chooseTaskActivity.ChooseTaskActivity
-import pl.polsl.MathHelper.ui.mainActivity.MainActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.ui.testActivity.TestActivity
-import pl.polsl.MathHelper.utils.AppPreferences
-import pl.polsl.MathHelper.utils.ViewUtils
-import pl.polsl.MathHelper.utils.VolleySingleton
-import pl.polsl.MathHelper.utils.signalRHelper
+import pl.polsl.MathHelper.utils.*
 import javax.inject.Inject
 
 
@@ -96,11 +94,11 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         //val svgStrokeWidth = 25
         svgImage?.svgXML = svgImage?.svgXML?.replace("stroke-width=\"[0-9]+\"".toRegex(), "stroke-width=\"$svgStrokeWidth\"")
         svgImage?.svgXML = svgImage?.svgXML?.replace("stroke-width:([\" \"]?)+[1-9]+".toRegex(), "stroke-width: $svgStrokeWidth")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("<line ".toRegex(), "<path onclick=\"onClickEvent(evt)\" ")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("<path ".toRegex(), "<path onclick=\"onClickEvent(evt)\" ")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("<circle ".toRegex(), "<circle onclick=\"onClickEvent(evt)\" ")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("<rect ".toRegex(), "<rect onclick=\"onClickEvent(evt)\" ")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("<image ".toRegex(), "<image onclick=\"onClickEvent(evt)\" ")
+        svgImage?.svgXML = svgImage?.svgXML?.replace("id=".toRegex(), " onclick=\"onClickEvent(evt)\" id=")
+        //svgImage?.svgXML = svgImage?.svgXML?.replace("<path ".toRegex(), "<path onclick=\"onClickEvent(evt)\" ")
+        //svgImage?.svgXML = svgImage?.svgXML?.replace("<circle ".toRegex(), "<circle onclick=\"onClickEvent(evt)\" ")
+        //svgImage?.svgXML = svgImage?.svgXML?.replace("<rect ".toRegex(), "<rect onclick=\"onClickEvent(evt)\" ")
+        //svgImage?.svgXML = svgImage?.svgXML?.replace("<image ".toRegex(), "<image onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<use .*<\\/use>".toRegex(), "")
         val indexEndOfFirstSvgTag: Int = svgImage?.svgXML?.indexOf(">")!!
         val javascriptScript = """<script type="application/ecmascript"> <![CDATA[
@@ -136,7 +134,19 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         signalRHelperClass = signalRHelper(this)
         val serverToken = Hawk.get<String>("Server_Token")
         signalRHelperClass?.signalr(serverToken)
-        if(!Hawk.get<Boolean>("Is_In_Call"))login("5001")
+        if(!Hawk.get<Boolean>("Is_In_Call")){
+            var phoneNumber: String? = null
+            if (AppPreferences.appMode == 2){
+                if(Hawk.contains("Teacher_phone_number")){
+                    phoneNumber = Hawk.get<String>("Teacher_phone_number")
+                }
+            } else{
+                if(Hawk.contains("Student_phone_number")) {
+                    phoneNumber = Hawk.get<String>("Student_phone_number")
+                }
+            }
+            if(phoneNumber!= null)login(phoneNumber)
+        }
     }
 
     override fun onResume() {
@@ -196,13 +206,17 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
                     when (clickCountSelect) {
                         1 -> textToSpeechSingleton?.speakSentence("Wybór testu do rozwiązania")
                         2 ->{
-                            if(tests?.testList?.size!! > 0){
-                                textToSpeechSingleton?.speakSentence("Uruchamianie modułu testów")
-                                val myIntent = Intent(this@ShowSvgActivity, TestActivity::class.java)
-                                this@ShowSvgActivity.startActivity(myIntent)
-                                finish()
+                            if(AppPreferences.appMode == 2){
+                                textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia")
                             }else{
-                                textToSpeechSingleton?.speakSentence("Brak testów dla tego zadania")
+                                if(tests?.testList?.size!! > 0){
+                                    textToSpeechSingleton?.speakSentence("Uruchamianie modułu testów")
+                                    val myIntent = Intent(this@ShowSvgActivity, TestActivity::class.java)
+                                    this@ShowSvgActivity.startActivity(myIntent)
+                                    finish()
+                                }else{
+                                    textToSpeechSingleton?.speakSentence("Brak testów dla tego zadania")
+                                }
                             }
                         }
                     }
@@ -496,6 +510,19 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
     }
 
     override fun onClick(click: String) {
+        runOnUiThread {
+            if(AppPreferences.appMode == 2){
+                wv_image_show_svg.removeAllViews()
+                val clickResponse = Gson().fromJson(click, ClickSendObject::class.java)
+                val x = clickResponse.click?.get(0)?.x
+                val y = clickResponse.click?.get(0)?.y
+                val elementId = clickResponse.click?.get(0)?.elementId
+                Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
+                textToSpeechSingleton?.speakSentence("Uczeń kliknął element o id $elementId")
+                val circleView: View = Circle(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
+                wv_image_show_svg.addView(circleView)
+            }
+        }
         Log.i("","Click $click")
     }
 

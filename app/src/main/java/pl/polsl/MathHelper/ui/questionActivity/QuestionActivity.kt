@@ -151,7 +151,19 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         signalRHelperClass = signalRHelper(this)
         val serverToken = Hawk.get<String>("Server_Token")
         signalRHelperClass?.signalr(serverToken)
-        if(!Hawk.get<Boolean>("Is_In_Call"))login("5001")
+        if(!Hawk.get<Boolean>("Is_In_Call")){
+            var phoneNumber: String? = null
+            if (AppPreferences.appMode == 2){
+                if(Hawk.contains("Teacher_phone_number")){
+                    phoneNumber = Hawk.get<String>("Teacher_phone_number")
+                }
+            } else{
+                if(Hawk.contains("Student_phone_number")) {
+                    phoneNumber = Hawk.get<String>("Student_phone_number")
+                }
+            }
+            if(phoneNumber!= null)login(phoneNumber)
+        }
     }
 
     private fun initializeQuestionList(){

@@ -24,6 +24,7 @@ import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
 import pl.polsl.MathHelper.adapters.UserListAdapter
 import pl.polsl.MathHelper.model.*
+import pl.polsl.MathHelper.ui.mainActivity.MainActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.utils.*
 import javax.inject.Inject
@@ -76,9 +77,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     private val coreListener = object: CoreListenerStub() {
         override fun onAccountRegistrationStateChanged(core: Core, account: Account, state: RegistrationState?, message: String) {
             if (state == RegistrationState.Failed || state == RegistrationState.Cleared) {
-                textToSpeechSingleton?.speakSentence("Nie udało się zalogować do serwera Voip")
+                //textToSpeechSingleton?.speakSentence("Nie udało się zalogować do serwera Voip")
             } else if (state == RegistrationState.Ok) {
-                textToSpeechSingleton?.speakSentence("Zalogowano do serwera Voip")
+                //textToSpeechSingleton?.speakSentence("Zalogowano do serwera Voip")
             }
         }
 
@@ -119,7 +120,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
 
     override fun updateRecyclerView(studentListResponse: StudentListResponse?) {
         if(studentListResponse?.list!=null) studentList?.addAll(studentListResponse?.list!!)
-        textToSpeechSingleton?.speakSentence("Pobieranie danych. Proszę czekać")
+        textToSpeechSingleton?.speakSentence("Lista aktywnych użytkowników została pobrana")
         userListAdapter?.setCurrentlyChosenUser(currentlyChosenUserID)
         userListAdapter?.notifyDataSetChanged()
         if(studentList?.size!! > 0){
@@ -189,14 +190,15 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                         2 -> {
                             val id = userListAdapter?.getItem(currentlyChosenUserID)?.id
                             signalRHelperClass?.StartSession(id!!)
-                            //if (chosenStudent != null) {
-                            //    //textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
-                            //    val myIntent = Intent(this@UserListActivity, MainActivity::class.java)
-                            //    this@UserListActivity.startActivity(myIntent)
-                            //    finish()
-                            //} else {
-                            //    textToSpeechSingleton?.speakSentence("Nie wybrano żadnego użytkownika")
-                            //}
+                            if (chosenStudent != null) {
+                                Hawk.put("Currently_chosen_user_id", id)
+                                textToSpeechSingleton?.speakSentence("Wybrany użytkownik to " + chosenStudent?.name + " " + chosenStudent?.surname)
+                                val myIntent = Intent(this@UserListActivity, MainActivity::class.java)
+                                this@UserListActivity.startActivity(myIntent)
+                                finish()
+                            } else {
+                                textToSpeechSingleton?.speakSentence("Nie wybrano żadnego użytkownika")
+                            }
 
                         }
                     }
@@ -325,9 +327,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     override fun onClick(click: String) {
-        runOnUiThread {
-            Toast.makeText(this, "Click $click", Toast.LENGTH_SHORT).show()
-        }
+        //runOnUiThread {
+        //    Toast.makeText(this, "Click $click", Toast.LENGTH_SHORT).show()
+        //}
         Log.i("","Click $click")
     }
 
