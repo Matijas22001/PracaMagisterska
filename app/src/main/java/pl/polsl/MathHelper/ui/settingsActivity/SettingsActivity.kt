@@ -1,5 +1,6 @@
 package pl.polsl.MathHelper.ui.settingsActivity
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.menu_bar.*
@@ -18,6 +21,12 @@ import pl.polsl.MathHelper.App.Companion.core
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
 import pl.polsl.MathHelper.adapters.CustomAdapter
+import pl.polsl.MathHelper.helper_data_containers.ImageIdTestsForImage
+import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
+import pl.polsl.MathHelper.model.SvgImage
+import pl.polsl.MathHelper.model.SvgImageDescription
+import pl.polsl.MathHelper.model.Tests
+import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
 import pl.polsl.MathHelper.utils.AppPreferences
 import pl.polsl.MathHelper.utils.ViewUtils
 import pl.polsl.MathHelper.utils.signalRHelper
@@ -43,7 +52,14 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
     private var workingMode = 0 //0 - choose setting, 1 - voice speed, 2 - click interval, 3 - line thickness,  4 - quitApp
     val df = DecimalFormat("#.##")
     var signalRHelperClass: signalRHelper? = null
+    var userImagesIdsPairList: ArrayList<UserImageIdsPair>? = null
+    var svgImageList: ArrayList<SvgImage>? = null
+    var imageTestList: ArrayList<ImageIdTestsForImage>? = null
+    var svgImageDescriptionList: ArrayList<SvgImageDescription>? = null
+    var currentUserSvgImageList: ArrayList<SvgImage>? = null
+    var currentUserImageIdsPair: UserImageIdsPair? = null
 
+    var currentRemoteStudentId: Int? = null
 
     @Inject
     lateinit var presenter: SettingsPresenter
@@ -59,6 +75,11 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
         ViewUtils.fullScreenCall(window)
         initializeOnClicks()
         mockInicializeLists()
+        if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
+        if(!(Hawk.contains("Is_from_user_list") && Hawk.get("Is_from_user_list"))){
+            inicializeListRemote()
+            Hawk.delete("Is_from_user_list")
+        }
         initializeRecyclerView()
         df.roundingMode = RoundingMode.CEILING
         signalRHelperClass = signalRHelper(this)
@@ -79,8 +100,13 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        ViewUtils.fullScreenCall(window)
+    }
+
     private fun initializeRecyclerView(){
-        textToSpeechSingleton?.speakSentence("Obecny moduł opcje. Zaznaczona opcja to zmiana prędkości mowy.")
+        textToSpeechSingleton?.speakSentence("Opcje. Zaznaczona opcja zmiana prędkości mowy.")
         linearLayoutManager = LinearLayoutManager(this)
         settingRecyclerView.layoutManager = linearLayoutManager
         stringAdapter =
@@ -92,6 +118,40 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
         chosenSetting = stringAdapter?.getItem(currentlyChosenSetting)
     }
 
+    private fun inicializeListRemote() {
+        if(Hawk.contains("Currently_chosen_user_id"))
+        {
+            currentRemoteStudentId = Hawk.get<Int>("Currently_chosen_user_id")
+        }
+        val gson = Gson()
+        val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+        userImagesIdsPairList = gson.fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+        val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+        svgImageList = gson.fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+        val svgImageDescriptionType = object : TypeToken<List<SvgImageDescription>>() {}.type
+        svgImageDescriptionList = gson.fromJson<ArrayList<SvgImageDescription>>(AppPreferences.descriptionList, svgImageDescriptionType)
+        val imageIdTestsForImageType = object : TypeToken<List<ImageIdTestsForImage>>() {}.type
+        imageTestList = gson.fromJson<ArrayList<ImageIdTestsForImage>>(AppPreferences.testList, imageIdTestsForImageType)
+        for(item in userImagesIdsPairList!!){
+            if(currentRemoteStudentId!=null && AppPreferences.appMode == 2){
+                if(currentRemoteStudentId == item.userId)
+                    currentUserImageIdsPair = item
+            }else{
+                if(AppPreferences.chosenUser == item.userId)
+                    currentUserImageIdsPair = item
+            }
+        }
+        currentUserSvgImageList?.clear()
+        for(item in currentUserImageIdsPair?.svgIdListFromServer!!){
+            for(item1 in svgImageList!!){
+                if(item == item1.svgId){
+                    currentUserSvgImageList?.add(item1)
+                }
+            }
+        }
+    }
+
+
     fun initializeOnClicks(){
         btn_back.setOnClickListener {
             clickCountBack++
@@ -102,7 +162,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
                         1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                         2 -> {
                             if(workingMode==0){
-                                textToSpeechSingleton?.speakSentence("Powrót do wcześniejszego ekranu")
+                                textToSpeechSingleton?.speakSentence("Powrót")
                                 finish()
                             }else{
                                 reactToWorkingModeBack()
@@ -125,8 +185,8 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
                                 1->textToSpeechSingleton?.speakSentence("Zmniejsz prędkość mowy")
                                 2->textToSpeechSingleton?.speakSentence("Zmniejsz interwał między kliknięciami")
                                 3->textToSpeechSingleton?.speakSentence("Zmniejsz grubość linii")
-                                4->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
-                                5->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to zakończenie rozmowy. Brak operacji do wykonania.")
+                                4->textToSpeechSingleton?.speakSentence("Ustawienie to wyjście z aplikacji. Brak operacji.")
+                                5->textToSpeechSingleton?.speakSentence("Ustawienie to zakończenie rozmowy. Brak operacji.")
                             }
                         }
                         2 -> {
@@ -153,8 +213,8 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
                                 1->textToSpeechSingleton?.speakSentence("Zwiększ prędkość mowy")
                                 2->textToSpeechSingleton?.speakSentence("Zwiększ interwał między kliknięciami")
                                 3->textToSpeechSingleton?.speakSentence("Zwiększ grubość linii")
-                                4->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
-                                5->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to zakończenie rozmowy. Brak operacji do wykonania.")
+                                4->textToSpeechSingleton?.speakSentence("Ustawienie to wyjście z aplikacji. Brak operacji.")
+                                5->textToSpeechSingleton?.speakSentence("Ustawienie to zakończenie rozmowy. Brak operacji.")
                             }
                         }
                         2-> {
@@ -195,7 +255,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
                 override fun onFinish() {
                     when (clickCountSettings) {
                         1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_settings))
-                        2 -> textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia. Obecny moduł to ustawienia")
+                        2 -> textToSpeechSingleton?.speakSentence("Obecny moduł to ustawienia")
                     }
                     clickCountSettings = 0
                 }
@@ -225,7 +285,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSetting)
         stringAdapter?.notifyDataSetChanged()
         chosenSetting = stringAdapter?.getItem(currentlyChosenSetting)
-        textToSpeechSingleton?.speakSentence("Wybrane ustawienie to $chosenSetting")
+        textToSpeechSingleton?.speakSentence("$chosenSetting")
     }
 
     fun choosePreviousSetting(){
@@ -237,7 +297,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSetting)
         stringAdapter?.notifyDataSetChanged()
         chosenSetting = stringAdapter?.getItem(currentlyChosenSetting)
-        textToSpeechSingleton?.speakSentence("Wybrane ustawienie to $chosenSetting")
+        textToSpeechSingleton?.speakSentence("$chosenSetting")
     }
 
     fun reactToWorkingModePrevoius(){
@@ -313,7 +373,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
            }
            4 -> {
                textToSpeechSingleton?.speakSentence("Zamykanie aplikacji")
-               finish()
+               finishAffinity()
                exitProcess(0)
            }
            5 -> {
@@ -343,13 +403,13 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
     }
 
     private fun incrementTapInterval(){
-        if(AppPreferences.tapInterval in 800..1599){
+        if(AppPreferences.tapInterval in 600..1599){
             AppPreferences.tapInterval += 100
         }
     }
 
     private fun decrementTapInterval(){
-        if(AppPreferences.tapInterval in 801..1600){
+        if(AppPreferences.tapInterval in 601..1600){
             AppPreferences.tapInterval -= 100
         }
     }
@@ -524,6 +584,48 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
 
     override fun onClick(click: String) {
         Log.i("","Click $click")
+    }
+
+    override fun onImageChange(imageId: Int) {
+        runOnUiThread {
+            if(AppPreferences.appMode == 1){
+                AppPreferences.chosenTask = Gson().toJson(getCurrentTask(imageId))
+                AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(imageId))
+                AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(imageId))
+                //AppPreferences.chosenTaskId = currentlyChosenTaskID
+                Hawk.put("Is_task_from_teacher", true)
+                val myIntent = Intent(this@SettingsActivity, ShowSvgActivity::class.java)
+                this@SettingsActivity.startActivity(myIntent)
+                finish()
+            }
+        }
+    }
+
+    private fun getCurrentTask(svgId: Int): SvgImage?{
+        for(item in currentUserSvgImageList!!){
+            if(item.svgId == svgId){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTaskDescription(id: Int): SvgImageDescription?{
+        for(item in svgImageDescriptionList!!){
+            if(id == item.svgId){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTaskTests(id:Int): Tests? {
+        for(item in imageTestList!!){
+            if(id == item.imageId){
+                return item.tests
+            }
+        }
+        return null
     }
 
 }

@@ -63,7 +63,7 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSubjectID)
         stringAdapter?.notifyDataSetChanged()
         chosenSubject = stringAdapter?.getItem(currentlyChosenSubjectID)
-        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór przedmiotu. Zaznaczony przedmiot to $chosenSubject")
+        textToSpeechSingleton?.speakSentence("Wybór przedmiotu. Zaznaczony przedmiot $chosenSubject")
     }
 
     @OnClick(R.id.btn_back)
@@ -125,7 +125,7 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
                 when (clickCountSelect) {
                     1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
                     2 -> {
-                        textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $chosenSubject")
+                        textToSpeechSingleton?.speakSentence("Wybrany przedmiot $chosenSubject")
                         AppPreferences.chosenSubject = chosenSubject!!
                         AppPreferences.chosenSubjectId = currentlyChosenSubjectID
                         val myIntent = Intent(this@ChooseSubjectActivity, MainActivity::class.java)
@@ -181,7 +181,7 @@ class ChooseSubjectActivity: AppCompatActivity(), ChooseSubjectActivityView, Cho
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSubjectID)
         stringAdapter?.notifyDataSetChanged()
         chosenSubject = stringAdapter?.getItem(currentlyChosenSubjectID)
-        textToSpeechSingleton?.speakSentence("Wybrany przedmiot to $chosenSubject")
+        textToSpeechSingleton?.speakSentence("Wybrany przedmiot $chosenSubject")
     }
 
     fun choosePreviousSubject(){

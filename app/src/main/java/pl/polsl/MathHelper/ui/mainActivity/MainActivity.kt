@@ -1,15 +1,14 @@
 package pl.polsl.MathHelper.ui.mainActivity
 
-import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.TextView
@@ -20,7 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
-import butterknife.OnClick
 import com.android.volley.RequestQueue
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -30,7 +28,10 @@ import kotlinx.android.synthetic.main.menu_bar.*
 import org.linphone.core.*
 import org.linphone.core.tools.Log
 import pl.polsl.MathHelper.App
+import pl.polsl.MathHelper.App.Companion.core
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
+import pl.polsl.MathHelper.R
+import pl.polsl.MathHelper.adapters.CustomAdapter
 import pl.polsl.MathHelper.helper_data_containers.ImageIdTestsForImage
 import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
 import pl.polsl.MathHelper.model.LoginResponse
@@ -39,14 +40,13 @@ import pl.polsl.MathHelper.model.SvgImageDescription
 import pl.polsl.MathHelper.model.Tests
 import pl.polsl.MathHelper.ui.chooseTaskActivity.ChooseTaskActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
+import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
 import pl.polsl.MathHelper.ui.userListActivity.UserListActivity
 import pl.polsl.MathHelper.utils.AppPreferences
 import pl.polsl.MathHelper.utils.ViewUtils
 import pl.polsl.MathHelper.utils.VolleySingleton
 import pl.polsl.MathHelper.utils.signalRHelper
 import javax.inject.Inject
-import pl.polsl.MathHelper.R
-import pl.polsl.MathHelper.adapters.CustomAdapter
 
 
 class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigator,
@@ -80,6 +80,10 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     var svgDescriptionList: ArrayList<SvgImageDescription>? = null
     var imageIdTestsForImageList: ArrayList<ImageIdTestsForImage>? = null
     var userImagesIdsPairList: ArrayList<UserImageIdsPair>? = null
+    var imageTestList: ArrayList<ImageIdTestsForImage>? = null
+    var svgImageDescriptionList: ArrayList<SvgImageDescription>? = null
+    var currentUserSvgImageList: ArrayList<SvgImage>? = null
+    var currentUserImageIdsPair: UserImageIdsPair? = null
     var svgImageList: ArrayList<SvgImage>? = null
     private var serverToken: String? = null
     var hasBeenLoggedIn: Boolean = false
@@ -121,48 +125,54 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         ViewUtils.fullScreenCall(window)
         signalRHelperClass = signalRHelper(this)
         initializeOnClicks()
+        pxFromDp(this, 30F)
         if (userImagesIdsPairList == null) userImagesIdsPairList = ArrayList()
         if (svgImageList == null) svgImageList = ArrayList()
         if (svgDescriptionList == null) svgDescriptionList = ArrayList()
         if (imageIdTestsForImageList == null) imageIdTestsForImageList = ArrayList()
-        if(Hawk.contains("Is_Logged_In")){
+        if (currentUserSvgImageList == null) currentUserSvgImageList = ArrayList()
+        if (Hawk.contains("Is_Logged_In")) {
             hasBeenLoggedIn = Hawk.get("Is_Logged_In")
         }
-        if(Hawk.contains("Currently_chosen_user_id"))
-        {
+        if (Hawk.contains("Currently_chosen_user_id")) {
             currentRemoteStudentId = Hawk.get<Int>("Currently_chosen_user_id")
         }
-        if(hasBeenLoggedIn){
-            if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
+        if (hasBeenLoggedIn) {
+            if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID =
+                AppPreferences.chosenSectionId
             queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
-            if(currentRemoteStudentId!=null){
+            if (currentRemoteStudentId != null) {
                 textToSpeechSingleton?.speakSentence("Pobieranie danych, proszę czekać")
                 val token = Hawk.get<String>("Server_Token")
                 serverToken = token
                 presenter.getUserImageIdsFromServer(queue!!, currentRemoteStudentId!!, token)
                 initializeRecyclerView()
-            }else{
-                //val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
-                //userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
-                //val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
-                //svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+            } else {
+                //if(isNetworkConnected()){
                 textToSpeechSingleton?.speakSentence("Pobieranie danych, proszę czekać")
                 val token = Hawk.get<String>("Server_Token")
                 serverToken = token
                 presenter.getUserImageIdsFromServer(queue!!, AppPreferences.chosenUser, token)
                 initializeRecyclerView()
-                //updateRecyclerView()
+                //}else{
+                //    val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+                //    userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+                //    val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+                //    svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+                //    initializeRecyclerView()
+                //}
             }
-        }else{
+        } else {
             clearAppData()
-            if(AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
+            if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID =
+                AppPreferences.chosenSectionId
             queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
-            if(textToSpeechSingleton?.isTTSready() == true){
-                textToSpeechSingleton?.speakSentenceWithoutDisturbing("Prosze podać nazwę użytkownika")
-            }else{
+            if (textToSpeechSingleton?.isTTSready() == true) {
+                textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
+            } else {
                 val handler = Handler()
                 handler.postDelayed({
-                    textToSpeechSingleton?.speakSentenceWithoutDisturbing("Prosze podać nazwę użytkownika")
+                    textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
                 }, 1000)
             }
             displayLoginUsernamePrompt()
@@ -171,6 +181,40 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        ViewUtils.fullScreenCall(window)
+    }
+
+
+    private fun inicializeListRemote() {
+        val gson = Gson()
+        val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+        userImagesIdsPairList = gson.fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+        val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+        svgImageList = gson.fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+        val svgImageDescriptionType = object : TypeToken<List<SvgImageDescription>>() {}.type
+        svgImageDescriptionList = gson.fromJson<ArrayList<SvgImageDescription>>(AppPreferences.descriptionList, svgImageDescriptionType)
+        val imageIdTestsForImageType = object : TypeToken<List<ImageIdTestsForImage>>() {}.type
+        imageTestList = gson.fromJson<ArrayList<ImageIdTestsForImage>>(AppPreferences.testList, imageIdTestsForImageType)
+        for(item in userImagesIdsPairList!!){
+            if(currentRemoteStudentId!=null && AppPreferences.appMode == 2){
+                if(currentRemoteStudentId == item.userId)
+                    currentUserImageIdsPair = item
+            }else{
+                if(AppPreferences.chosenUser == item.userId)
+                    currentUserImageIdsPair = item
+            }
+        }
+        currentUserSvgImageList?.clear()
+        for(item in currentUserImageIdsPair?.svgIdListFromServer!!){
+            for(item1 in svgImageList!!){
+                if(item == item1.svgId){
+                    currentUserSvgImageList?.add(item1)
+                }
+            }
+        }
+    }
 
     private fun initializeRecyclerView(){
         linearLayoutManager = LinearLayoutManager(this)
@@ -197,17 +241,12 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        ViewUtils.fullScreenCall(window)
-    }
 
     private fun displayLoginUsernamePrompt(){
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.login_prompt, null)
         etUsername = dialogView.findViewById(R.id.et_username)
         initializeNumbers(dialogView, etUsername!!)
-
         val dialog: AlertDialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .setTitle("Nazwa Użytkownika")
@@ -234,6 +273,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         }
 
         hideKeyboard(this)
+        ViewUtils.fullScreenCall(dialog.window!!)
         dialog.show()
     }
 
@@ -266,6 +306,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             }
         }
         hideKeyboard(this)
+        ViewUtils.fullScreenCall(dialog.window!!)
         dialog.show()
     }
 
@@ -311,7 +352,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                                 this@MainActivity.startActivity(myIntent)
                                 finish()
                             }else{
-                                textToSpeechSingleton?.speakSentence("Brak modułu do wykonania przejścia")
+                                textToSpeechSingleton?.speakSentence("Brak modułu")
                             }
                         }
                     }
@@ -473,6 +514,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
 
 
     override fun userLoggedInSuccessfulLogic(loginResponse: LoginResponse, dialog: AlertDialog) {
+        ViewUtils.fullScreenCall(window)
         loginResponseSaved = loginResponse
         serverToken =  loginResponse.token
         Hawk.put("Server_Token",serverToken)
@@ -498,6 +540,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     }
 
     override fun userLoggedInFailedLogic() {
+        ViewUtils.fullScreenCall(window)
         textToSpeechSingleton?.speakSentence("Podano błędne dane logowania")
         displayLoginUsernamePrompt()
     }
@@ -553,28 +596,27 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
 
     override fun addTestToList(imageId: Int?, tests: Tests?) {
         imageIdTestsForImageList?.add(ImageIdTestsForImage(imageId, tests))
-        if (imageId == imageIdTestsForImageList?.last()?.imageId) {
+        if (imageId == imageListToDownload?.last()) {
             val stringTestListSerialized = Gson().toJson(imageIdTestsForImageList)
             AppPreferences.testList = stringTestListSerialized
             //textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
             updateRecyclerView()
-            textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
             if(AppPreferences.appMode == 2){
-
                 if(Hawk.contains("Teacher_phone_number")){
                     val phoneNumber = Hawk.get<String>("Teacher_phone_number")
                     login(phoneNumber)
                 }
             }else{
+                textToSpeechSingleton?.speakSentence("Zakończono pobieranie danych")
                 if(loginResponseSaved?.user?.voipNumber!= null) {
                     Hawk.put("Student_phone_number", loginResponseSaved?.user?.voipNumber)
                     login(loginResponseSaved?.user?.voipNumber!!)
                 }
+                inicializeListRemote()
             }
 
         }
     }
-
 
 
     private fun clearAppData(){
@@ -596,6 +638,10 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         AppPreferences.chosenTestId = -1
         AppPreferences.chosenQuestionId = -1
         AppPreferences.chosenAnswerId = -1
+    }
+
+    fun pxFromDp(context: Context, dp: Float): Float {
+        return dp * context.resources.displayMetrics.density
     }
 
 
@@ -658,12 +704,14 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             10-> clickKasuj++
             11-> clickCzytaj++
         }
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        val testTapInterval: Long = 400
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountZero) {
                     1 -> textToSpeechSingleton?.speakSentence("Zero")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano zero")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "0"
                     }
@@ -671,12 +719,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountZero = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountOne) {
                     1 -> textToSpeechSingleton?.speakSentence("Jeden")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano jeden")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "1"
                     }
@@ -684,12 +733,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountOne = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountTwo) {
                     1 -> textToSpeechSingleton?.speakSentence("Dwa")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano dwa")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "2"
                     }
@@ -697,12 +747,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountTwo = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountThree) {
                     1 -> textToSpeechSingleton?.speakSentence("Trzy")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano trzy")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "3"
                     }
@@ -710,12 +761,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountThree = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountFour) {
                     1 -> textToSpeechSingleton?.speakSentence("Cztery")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano cztery")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "4"
                     }
@@ -723,12 +775,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountFour = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountFive) {
                     1 -> textToSpeechSingleton?.speakSentence("Pięć")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano pięć")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "5"
                     }
@@ -736,12 +789,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountFive = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountSix) {
                     1 -> textToSpeechSingleton?.speakSentence("Sześć")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano sześć")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "6"
                     }
@@ -749,12 +803,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountSix = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountSeven) {
                     1 -> textToSpeechSingleton?.speakSentence("Siedem")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano siedem")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "7"
                     }
@@ -762,12 +817,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountSeven = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountEight) {
                     1 -> textToSpeechSingleton?.speakSentence("Osiem")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano osiem")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "8"
                     }
@@ -775,12 +831,13 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountEight = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCountNine) {
                     1 -> textToSpeechSingleton?.speakSentence("Dziewięć")
                     2 -> {
+                        textToSpeechSingleton?.speakSentence("Wpisano dziewięć")
                         val currentText: String = editText?.text.toString()
                         editText?.text = currentText + "9"
                     }
@@ -788,21 +845,26 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 clickCountNine = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickKasuj) {
                     1 -> textToSpeechSingleton?.speakSentence("Kasuj")
                     2 -> {
                         val currentText: String = editText?.text.toString()
-                        if(currentText.isNotEmpty())
-                            editText?.text = currentText.substring(0, currentText.length-1)
+                        if(currentText.isNotEmpty()){
+                            textToSpeechSingleton?.speakSentence("Skasowano " + currentText.substring(currentText.length-1, currentText.length))
+                            if(currentText.isNotEmpty())
+                                editText?.text = currentText.substring(0, currentText.length-1)
+                        }else{
+                            textToSpeechSingleton?.speakSentence("Brak tekstu do skasowania")
+                        }
                     }
                 }
                 clickKasuj = 0
             }
         }.start()
-        object: CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
+        object: CountDownTimer(testTapInterval,testTapInterval) {
             override fun onTick(millisUntilFinished: Long) {}
             override fun onFinish() {
                 when (clickCzytaj) {
@@ -831,7 +893,8 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                     when (clickCountSelect) {
                         1 -> textToSpeechSingleton?.speakSentence("Odbierz")
                         2 -> {
-                            App.core.currentCall?.accept()
+                            core.currentCall?.accept()
+                            toggleSpeaker()
                             Hawk.put("Is_In_Call",true)
                             resetViewState()
                         }
@@ -848,7 +911,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                     when (clickCountBack) {
                         1 -> textToSpeechSingleton?.speakSentence("Odrzuć")
                         2 -> {
-                            App.core.currentCall?.decline(Reason.Declined)
+                            core.currentCall?.decline(Reason.Declined)
                             Hawk.put("Is_In_Call",false)
                             resetViewState()
                         }
@@ -856,6 +919,15 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                     clickCountBack = 0
                 }
             }.start()
+        }
+    }
+
+    private fun toggleSpeaker() {
+        for (audioDevice in core.audioDevices) {
+            if (audioDevice.type == AudioDevice.Type.Speaker) {
+                core.currentCall?.outputAudioDevice = audioDevice
+                return
+            }
         }
     }
 
@@ -921,4 +993,45 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         Log.i("","Click $click")
     }
 
+    override fun onImageChange(imageId: Int) {
+        runOnUiThread {
+            if(AppPreferences.appMode == 1){
+                AppPreferences.chosenTask = Gson().toJson(getCurrentTask(imageId))
+                AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(imageId))
+                AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(imageId))
+                //AppPreferences.chosenTaskId = currentlyChosenTaskID
+                Hawk.put("Is_task_from_teacher", true)
+                val myIntent = Intent(this@MainActivity, ShowSvgActivity::class.java)
+                this@MainActivity.startActivity(myIntent)
+                finish()
+            }
+        }
+    }
+
+    private fun getCurrentTask(svgId: Int): SvgImage?{
+        for(item in currentUserSvgImageList!!){
+            if(item.svgId == svgId){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTaskDescription(id: Int): SvgImageDescription?{
+        for(item in svgImageDescriptionList!!){
+            if(id == item.svgId){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTaskTests(id:Int): Tests? {
+        for(item in imageTestList!!){
+            if(id == item.imageId){
+                return item.tests
+            }
+        }
+        return null
+    }
 }

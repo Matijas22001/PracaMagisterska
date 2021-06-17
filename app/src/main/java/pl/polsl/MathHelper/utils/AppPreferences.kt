@@ -8,7 +8,7 @@ object AppPreferences {
     private const val MODE = Context.MODE_PRIVATE
     private lateinit var preferences: SharedPreferences
     private val SPEECH_SPEED = Pair("SPEECH_SPEED", 1f)
-    private val TAP_INTERVAL = Pair("TAP_INTERVAL", 800L)
+    private val TAP_INTERVAL = Pair("TAP_INTERVAL", 600L)
     private val CURRENTLY_CHOSEN_USER = Pair("CURRENTLY_CHOSEN_USER", -1)
     private val CURRENT_USER_LIST = Pair("CURRENTL_USER_LIST", "")
     private val USER_ID_IMAGE_ID = Pair("USER_ID_IMAGE_ID", "")

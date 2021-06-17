@@ -25,6 +25,7 @@ import pl.polsl.MathHelper.utils.AppPreferences
 import pl.polsl.MathHelper.utils.ViewUtils
 import pl.polsl.MathHelper.utils.VolleySingleton
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.menu_bar.*
@@ -35,6 +36,8 @@ import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
 import org.linphone.core.*
 import pl.polsl.MathHelper.App
+import pl.polsl.MathHelper.helper_data_containers.ImageIdTestsForImage
+import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
 import pl.polsl.MathHelper.model.*
 import pl.polsl.MathHelper.ui.chooseTaskActivity.ChooseTaskActivity
 import pl.polsl.MathHelper.ui.mainActivity.MainActivity
@@ -60,13 +63,21 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
     var testNameList: ArrayList<String>? = null
     var currentlyChosenTestId: Int = 0
     var signalRHelperClass: signalRHelper? = null
+    var userImagesIdsPairList: ArrayList<UserImageIdsPair>? = null
+    var svgImageList: ArrayList<SvgImage>? = null
+    var imageTestList: ArrayList<ImageIdTestsForImage>? = null
+    var svgImageDescriptionList: ArrayList<SvgImageDescription>? = null
+    var currentUserSvgImageList: ArrayList<SvgImage>? = null
+    var currentUserImageIdsPair: UserImageIdsPair? = null
+
+    var currentRemoteStudentId: Int? = null
 
     @Inject
     lateinit var presenter: TestActivityPresenter
 
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
-        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór testu. Zaznaczony test to " + testNameList?.get(currentlyChosenTestId))
+        textToSpeechSingleton?.speakSentence("Wybór testu. Zaznaczony test " + testNameList?.get(currentlyChosenTestId))
         wv_image_show_svg?.settings?.javaScriptEnabled = true
         wv_image_show_svg?.settings?.domStorageEnabled = true
         wv_image_show_svg?.settings?.useWideViewPort = true // it was true
@@ -93,8 +104,8 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
         val svgStrokeWidth = AppPreferences.chosenImageSize
         //val svgStrokeWidth = 25
         svgImage?.svgXML = svgImage?.svgXML?.replace("stroke-width=\"[0-9]+\"".toRegex(), "stroke-width=\"$svgStrokeWidth\"")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("stroke-width:([\" \"]?)+[1-9]+".toRegex(), "stroke-width: $svgStrokeWidth")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("<line ".toRegex(), "<path onclick=\"onClickEvent(evt)\" ")
+        svgImage?.svgXML = svgImage?.svgXML?.replace("stroke-width:([\" \"]?)+[1-50]+px".toRegex(), "stroke-width: $svgStrokeWidth")
+        svgImage?.svgXML = svgImage?.svgXML?.replace("<line ".toRegex(), "<line onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<path ".toRegex(), "<path onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<circle ".toRegex(), "<circle onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<rect ".toRegex(), "<rect onclick=\"onClickEvent(evt)\" ")
@@ -116,6 +127,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
     override fun onResume() {
         super.onResume()
         initializeWebView()
+        ViewUtils.fullScreenCall(window)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -126,6 +138,8 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
         //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         initializeOnClicks()
+        if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
+        inicializeListRemote()
         queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
         svgImageDescription = Gson().fromJson(AppPreferences.chosenTaskDescription, SvgImageDescription::class.java)
@@ -151,6 +165,40 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
             if(phoneNumber!= null)login(phoneNumber)
         }
     }
+
+    private fun inicializeListRemote() {
+        if(Hawk.contains("Currently_chosen_user_id"))
+        {
+            currentRemoteStudentId = Hawk.get<Int>("Currently_chosen_user_id")
+        }
+        val gson = Gson()
+        val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+        userImagesIdsPairList = gson.fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+        val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+        svgImageList = gson.fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+        val svgImageDescriptionType = object : TypeToken<List<SvgImageDescription>>() {}.type
+        svgImageDescriptionList = gson.fromJson<ArrayList<SvgImageDescription>>(AppPreferences.descriptionList, svgImageDescriptionType)
+        val imageIdTestsForImageType = object : TypeToken<List<ImageIdTestsForImage>>() {}.type
+        imageTestList = gson.fromJson<ArrayList<ImageIdTestsForImage>>(AppPreferences.testList, imageIdTestsForImageType)
+        for(item in userImagesIdsPairList!!){
+            if(currentRemoteStudentId!=null && AppPreferences.appMode == 2){
+                if(currentRemoteStudentId == item.userId)
+                    currentUserImageIdsPair = item
+            }else{
+                if(AppPreferences.chosenUser == item.userId)
+                    currentUserImageIdsPair = item
+            }
+        }
+        currentUserSvgImageList?.clear()
+        for(item in currentUserImageIdsPair?.svgIdListFromServer!!){
+            for(item1 in svgImageList!!){
+                if(item == item1.svgId){
+                    currentUserSvgImageList?.add(item1)
+                }
+            }
+        }
+    }
+
 
     private fun initializeTestList(){
         testNameList?.clear()
@@ -218,7 +266,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
                         2 ->
                         {
                             if(getCurrentTest()?.questionList?.size!! >0){
-                                textToSpeechSingleton?.speakSentence("Uruchamianie modułu pytań")
+                                textToSpeechSingleton?.speakSentence("Uruchamianie pytań")
                                 AppPreferences.chosenTest = Gson().toJson(getCurrentTest())
                                 AppPreferences.chosenTestId = currentlyChosenTestId
                                 Hawk.put("Test_start", getTime())
@@ -345,6 +393,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
                 Y = event.y.toLong()
                 Log.e("Kliknięto", "ID: $selectedId x $X y $Y")
                 sendClickDetails(X, Y, selectedId, svgImage?.svgId!!)
+                signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!).toString())
             }
         }
         return super.dispatchTouchEvent(event)
@@ -552,4 +601,47 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
     override fun onClick(click: String) {
         Log.i("","Click $click")
     }
+
+    override fun onImageChange(imageId: Int) {
+        runOnUiThread {
+            if(AppPreferences.appMode == 1){
+                AppPreferences.chosenTask = Gson().toJson(getCurrentTask(imageId))
+                AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(imageId))
+                AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(imageId))
+                //AppPreferences.chosenTaskId = currentlyChosenTaskID
+                Hawk.put("Is_task_from_teacher", true)
+                val myIntent = Intent(this@TestActivity, ShowSvgActivity::class.java)
+                this@TestActivity.startActivity(myIntent)
+                finish()
+            }
+        }
+    }
+    private fun getCurrentTask(svgId: Int): SvgImage?{
+        for(item in currentUserSvgImageList!!){
+            if(item.svgId == svgId){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTaskDescription(id: Int): SvgImageDescription?{
+        for(item in svgImageDescriptionList!!){
+            if(id == item.svgId){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTaskTests(id:Int): Tests? {
+        for(item in imageTestList!!){
+            if(id == item.imageId){
+                return item.tests
+            }
+        }
+        return null
+    }
+
+
 }

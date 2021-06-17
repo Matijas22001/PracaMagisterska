@@ -5,6 +5,7 @@ import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
 import io.reactivex.Single
 import org.linphone.core.tools.Log
+import pl.polsl.MathHelper.App
 
 
 class signalRHelper(signalRCallbacks: SignalRCallbacks) {
@@ -12,24 +13,24 @@ class signalRHelper(signalRCallbacks: SignalRCallbacks) {
 
 
     fun signalr(serverToken: String?) {
-        pl.polsl.MathHelper.App.hubConnection = HubConnectionBuilder.create("http://157.158.57.124:50820/api/rmlHub")
+        App.hubConnection = HubConnectionBuilder.create("http://157.158.57.124:50820/api/rmlHub")
             .withAccessTokenProvider(
                 Single.defer { Single.just(serverToken) }).build()
 
-        pl.polsl.MathHelper.App.hubConnection?.on("SessionStart") {
+        App.hubConnection?.on("SessionStart") {
             Log.i("SessionStarted")
             mainSignalRCallbacks.onSessionStart()
             // Przejście aplikacji w tryb zdalny czy coś
         }
 
-        pl.polsl.MathHelper.App.hubConnection?.on("SessionEnd") {
+        App.hubConnection?.on("SessionEnd") {
             Log.i("SessionEnded")
             mainSignalRCallbacks.onSessionEnd()
             // Przeczytanie komunikatu o zakończeniu sesji,
             // powrót do listy użytkowników itp.
         }
 
-        pl.polsl.MathHelper.App.hubConnection?.on(
+        App.hubConnection?.on(
             "StatusChange", { userName, status ->
                 Log.i("StatusChange $userName + $status")
                 mainSignalRCallbacks.onStatusChange(userName, status)
@@ -40,25 +41,35 @@ class signalRHelper(signalRCallbacks: SignalRCallbacks) {
             String::class.java
         )
 
-        pl.polsl.MathHelper.App.hubConnection?.on("Click", { click ->
+        App.hubConnection?.on("Click", { click ->
             Log.i("Click $click")
             mainSignalRCallbacks.onClick(click)
             // Obsługa wyświetlenia kliknięcia
         }, String::class.java)
 
-        HubConnectionTask().execute(pl.polsl.MathHelper.App.hubConnection)
+        App.hubConnection?.on("ImageChange", { imageId ->
+            Log.i("ImageChange $imageId")
+            mainSignalRCallbacks.onImageChange(imageId)
+            // Obsługa wyświetlenia kliknięcia
+        }, Int::class.java)
+
+        HubConnectionTask().execute(App.hubConnection)
     }
 
     fun StartSession(studentId: Int){
-        pl.polsl.MathHelper.App.hubConnection?.send("StartSession", studentId)
+        App.hubConnection?.send("StartSession", studentId)
     }
 
     fun SendClick(click: String){
-        pl.polsl.MathHelper.App.hubConnection?.send("SendClick", click)
+        App.hubConnection?.send("SendClick", click)
     }
 
     fun EndSession(){
-        pl.polsl.MathHelper.App.hubConnection?.send("EndSession")
+        App.hubConnection?.send("EndSession")
+    }
+
+    fun ImageSelect(imageId: Int){
+        App.hubConnection?.send("SelectImage", imageId)
     }
 
     internal class HubConnectionTask : AsyncTask<HubConnection?, Void?, Void?>() {
@@ -74,6 +85,7 @@ class signalRHelper(signalRCallbacks: SignalRCallbacks) {
         fun onSessionEnd()
         fun onStatusChange(userName: String, status: String)
         fun onClick(click: String)
+        fun onImageChange( imageId: Int)
     }
 
 }

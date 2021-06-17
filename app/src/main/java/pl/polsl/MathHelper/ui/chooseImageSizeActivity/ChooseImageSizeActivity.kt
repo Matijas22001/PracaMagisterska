@@ -54,6 +54,12 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
         initializeRecyclerView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        ViewUtils.fullScreenCall(window)
+    }
+
+
     private fun initializeRecyclerView(){
         linearLayoutManager = LinearLayoutManager(this)
         sizeRecyclerView.layoutManager = linearLayoutManager
@@ -63,7 +69,7 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSizeID)
         stringAdapter?.notifyDataSetChanged()
         chosenSize = stringAdapter?.getItem(currentlyChosenSizeID)
-        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór grubości linii. Zaznaczony rozmiar to $chosenSize")
+        textToSpeechSingleton?.speakSentence("Grubości linii. Zaznaczony rozmiar $chosenSize")
     }
 
     @OnClick(R.id.btn_back)
@@ -182,7 +188,7 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSizeID)
         stringAdapter?.notifyDataSetChanged()
         chosenSize = stringAdapter?.getItem(currentlyChosenSizeID)
-        textToSpeechSingleton?.speakSentence("Wybrany rozmiar to $chosenSize")
+        textToSpeechSingleton?.speakSentence("Wybrany rozmiar $chosenSize")
     }
 
     fun choose5thNextTask(){
@@ -194,7 +200,7 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSizeID)
         stringAdapter?.notifyDataSetChanged()
         chosenSize = stringAdapter?.getItem(currentlyChosenSizeID)
-        textToSpeechSingleton?.speakSentence("Wybrany rozmiar to $chosenSize")
+        textToSpeechSingleton?.speakSentence("Wybrany rozmiar $chosenSize")
     }
 
     fun choose5thPreviousTask(){
@@ -206,7 +212,7 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSizeID)
         stringAdapter?.notifyDataSetChanged()
         chosenSize = stringAdapter?.getItem(currentlyChosenSizeID)
-        textToSpeechSingleton?.speakSentence("Wybrany rozmiar to $chosenSize")
+        textToSpeechSingleton?.speakSentence("Wybrany rozmiar $chosenSize")
     }
 
     fun choosePreviousTask(){
@@ -218,7 +224,7 @@ class ChooseImageSizeActivity: AppCompatActivity(), ChooseImageSizeView,ChooseIm
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenSizeID)
         stringAdapter?.notifyDataSetChanged()
         chosenSize = stringAdapter?.getItem(currentlyChosenSizeID)
-        textToSpeechSingleton?.speakSentence("Wybrany rozmiar to $chosenSize")
+        textToSpeechSingleton?.speakSentence("Wybrany rozmiar $chosenSize")
     }
 
     private fun mockInicializeLists() {

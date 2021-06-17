@@ -27,6 +27,7 @@ import pl.polsl.MathHelper.model.*
 import pl.polsl.MathHelper.ui.mainActivity.MainActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.utils.*
+import pl.polsl.MathHelper.utils.VoIPHelperMethods.Companion.outgoingCall
 import javax.inject.Inject
 
 
@@ -73,6 +74,10 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         initializeRecyclerView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        ViewUtils.fullScreenCall(window)
+    }
 
     private val coreListener = object: CoreListenerStub() {
         override fun onAccountRegistrationStateChanged(core: Core, account: Account, state: RegistrationState?, message: String) {
@@ -120,7 +125,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
 
     override fun updateRecyclerView(studentListResponse: StudentListResponse?) {
         if(studentListResponse?.list!=null) studentList?.addAll(studentListResponse?.list!!)
-        textToSpeechSingleton?.speakSentence("Lista aktywnych użytkowników została pobrana")
+        textToSpeechSingleton?.speakSentence("Lista aktywnych użytkowników pobrana")
         userListAdapter?.setCurrentlyChosenUser(currentlyChosenUserID)
         userListAdapter?.notifyDataSetChanged()
         if(studentList?.size!! > 0){
@@ -143,9 +148,10 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                     when (clickCountBack) {
                         1 -> textToSpeechSingleton?.speakSentence("Rozłącz z użytkownikiem")
                         2 ->{
-                            //textToSpeechSingleton?.speakSentence("Rozpoczynam próbę połączenia")
-                            //outgoingCall("5001")
-                            signalRHelperClass?.EndSession()
+                            textToSpeechSingleton?.speakSentence("Rozpoczynam próbę połączenia")
+                            val number = userListAdapter?.getItem(currentlyChosenUserID)?.voipNumber
+                            if(number!=null) outgoingCall(number)
+                            //signalRHelperClass?.EndSession()
                         }
                     }
                     clickCountBack = 0
@@ -214,6 +220,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                     when (clickCountSettings) {
                         1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_settings))
                         2 -> {
+                            Hawk.put("Is_from_user_list", true)
                             val myIntent = Intent(this@UserListActivity, SettingsActivity::class.java)
                             this@UserListActivity.startActivity(myIntent)
                         }
@@ -331,6 +338,10 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         //    Toast.makeText(this, "Click $click", Toast.LENGTH_SHORT).show()
         //}
         Log.i("","Click $click")
+    }
+
+    override fun onImageChange(imageId: Int) {
+        Log.i("","ImageChange $imageId")
     }
 
 }

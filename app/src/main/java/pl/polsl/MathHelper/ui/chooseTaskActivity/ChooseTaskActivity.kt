@@ -98,6 +98,11 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        ViewUtils.fullScreenCall(window)
+    }
+
     private fun initializeRecyclerView(){
         linearLayoutManager = LinearLayoutManager(this)
         taskRecyclerView.layoutManager = linearLayoutManager
@@ -107,7 +112,7 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         stringAdapter?.setcurrentlyChosenValue(currentlyChosenTaskID)
         stringAdapter?.notifyDataSetChanged()
         chosenTask = stringAdapter?.getItem(currentlyChosenTaskID)
-        textToSpeechSingleton?.speakSentence("Obecny moduł to wybór zadania. Zaznaczone zadanie to $chosenTask")
+        textToSpeechSingleton?.speakSentence("Wybór zadania. Zaznaczone zadanie $chosenTask")
     }
 
 
@@ -165,7 +170,9 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
                     when (clickCountSelect) {
                         1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_select))
                         2 -> {
-                            //textToSpeechSingleton?.speakSentence("Wybrane zadanie to $chosenTask")
+                            if(AppPreferences.appMode == 2){
+                                signalRHelperClass?.ImageSelect(getCurrentTask(chosenTask!!)?.svgId!!)
+                            }
                             AppPreferences.chosenTask = Gson().toJson(getCurrentTask(chosenTask!!))
                             AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(getCurrentTask(chosenTask!!)?.svgId!!))
                             AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(getCurrentTask(chosenTask!!)?.svgId!!))
@@ -173,6 +180,7 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
                             val myIntent = Intent(this@ChooseTaskActivity, ShowSvgActivity::class.java)
                             this@ChooseTaskActivity.startActivity(myIntent)
                             finish()
+                            //textToSpeechSingleton?.speakSentence("Wybrane zadanie to $chosenTask")
                         }
                     }
                     clickCountSelect = 0
@@ -298,6 +306,15 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
     private fun getCurrentTask(taskTitle: String): SvgImage?{
         for(item in currentUserSvgImageList!!){
             if(item.svgTitle == taskTitle){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTask(svgId: Int): SvgImage?{
+        for(item in currentUserSvgImageList!!){
+            if(item.svgId == svgId){
                 return item
             }
         }
@@ -473,6 +490,21 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
 
     override fun onClick(click: String) {
         Log.i("","Click $click")
+    }
+
+    override fun onImageChange(imageId: Int) {
+        runOnUiThread {
+            if(AppPreferences.appMode == 1){
+                AppPreferences.chosenTask = Gson().toJson(getCurrentTask(imageId))
+                AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(imageId))
+                AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(imageId))
+                //AppPreferences.chosenTaskId = currentlyChosenTaskID
+                Hawk.put("Is_task_from_teacher", true)
+                val myIntent = Intent(this@ChooseTaskActivity, ShowSvgActivity::class.java)
+                this@ChooseTaskActivity.startActivity(myIntent)
+                finish()
+            }
+        }
     }
 
     override fun showMessage(resId: Int) {}

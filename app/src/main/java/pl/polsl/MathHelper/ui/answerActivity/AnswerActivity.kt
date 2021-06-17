@@ -18,9 +18,6 @@ import butterknife.OnClick
 import com.android.volley.RequestQueue
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
-import pl.polsl.MathHelper.helper_data_containers.AnswerChosen
-import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForQuestion
-import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForTest
 import pl.polsl.MathHelper.model.*
 import pl.polsl.MathHelper.ui.questionActivity.QuestionActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
@@ -28,6 +25,7 @@ import pl.polsl.MathHelper.utils.AppPreferences
 import pl.polsl.MathHelper.utils.ViewUtils
 import pl.polsl.MathHelper.utils.VolleySingleton
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.menu_bar.*
@@ -38,6 +36,7 @@ import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
 import org.linphone.core.*
 import pl.polsl.MathHelper.App
+import pl.polsl.MathHelper.helper_data_containers.*
 import pl.polsl.MathHelper.ui.mainActivity.MainActivity
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
 import pl.polsl.MathHelper.utils.signalRHelper
@@ -57,27 +56,34 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
     var svgImageDescription: SvgImageDescription? = null
     var test: Test? = null
     var question: Question? = null
-    var answerNameList: ArrayList<String>? = null
+    var answerNameList: ArrayList<AnswerListItem>? = null
     var currentlyChosenAnswerId: Int = 0
     var chosenAnswers: ArrayList<AnswerChosen>? = null
     var chosenAnswersForTest: ChosenAnswersForTest? = null
+    var chosenAnswersForQuestion: ChosenAnswersForQuestion? = null
     var queue: RequestQueue? = null
     var X: Long? = null
     var Y: Long? = null
     var signalRHelperClass: signalRHelper? = null
+    var userImagesIdsPairList: ArrayList<UserImageIdsPair>? = null
+    var svgImageList: ArrayList<SvgImage>? = null
+    var imageTestList: ArrayList<ImageIdTestsForImage>? = null
+    var svgImageDescriptionList: ArrayList<SvgImageDescription>? = null
+    var currentUserSvgImageList: ArrayList<SvgImage>? = null
+    var currentUserImageIdsPair: UserImageIdsPair? = null
 
-
+    var currentRemoteStudentId: Int? = null
 
     @Inject
     lateinit var presenter: AnswerActivityPresenter
 
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     fun initializeWebView(){
-        textToSpeechSingleton?.speakSentence("Obecny moduł to zaznaczanie odpowiedzi. Zaznaczona odpowiedź to " + answerNameList?.get(currentlyChosenAnswerId))
+        textToSpeechSingleton?.speakSentence("Moduł odpowiedzi")
         wv_image_show_svg?.settings?.javaScriptEnabled = true
         wv_image_show_svg?.settings?.domStorageEnabled = true
         wv_image_show_svg?.settings?.useWideViewPort = true // it was true
-        wv_image_show_svg?.settings?.allowFileAccess = true;
+        wv_image_show_svg?.settings?.allowFileAccess = true
         wv_image_show_svg?.settings?.loadsImagesAutomatically = true
         wv_image_show_svg?.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null)
         wv_image_show_svg?.webChromeClient = WebChromeClient()
@@ -105,8 +111,8 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         val svgStrokeWidth = AppPreferences.chosenImageSize
         //val svgStrokeWidth = 25
         svgImage?.svgXML = svgImage?.svgXML?.replace("stroke-width=\"[0-9]+\"".toRegex(), "stroke-width=\"$svgStrokeWidth\"")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("stroke-width:([\" \"]?)+[1-9]+".toRegex(), "stroke-width: $svgStrokeWidth")
-        svgImage?.svgXML = svgImage?.svgXML?.replace("<line ".toRegex(), "<path onclick=\"onClickEvent(evt)\" ")
+        svgImage?.svgXML = svgImage?.svgXML?.replace("stroke-width:([\" \"]?)+[1-50]+px".toRegex(), "stroke-width: $svgStrokeWidth")
+        svgImage?.svgXML = svgImage?.svgXML?.replace("<line ".toRegex(), "<line onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<path ".toRegex(), "<path onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<circle ".toRegex(), "<circle onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<rect ".toRegex(), "<rect onclick=\"onClickEvent(evt)\" ")
@@ -129,7 +135,6 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         setContentView(R.layout.show_svg)
         ButterKnife.bind(this)
         AndroidInjection.inject(this)
-        //textToSpeechSingleton = TextToSpeechSingleton(this)
         ViewUtils.fullScreenCall(window)
         initializeOnClicks()
         queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
@@ -138,8 +143,11 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         test = Gson().fromJson(AppPreferences.chosenTest, Test::class.java)
         chosenAnswersForTest = Gson().fromJson(AppPreferences.answerList, ChosenAnswersForTest::class.java)
         question = Gson().fromJson(AppPreferences.chosenQuestion, Question::class.java)
+        chosenAnswersForQuestion = getAnswersForQuestions()
         if(chosenAnswers==null) chosenAnswers = ArrayList()
         if(answerNameList==null) answerNameList = ArrayList()
+        if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
+        inicializeList()
         initializeAnswerList()
         initializeWebView()
         signalRHelperClass = signalRHelper(this)
@@ -162,22 +170,99 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
 
     override fun onResume() {
         super.onResume()
+        ViewUtils.fullScreenCall(window)
         initializeWebView()
+    }
+
+
+
+    private fun inicializeList() {
+        if(Hawk.contains("Currently_chosen_user_id"))
+        {
+            currentRemoteStudentId = Hawk.get<Int>("Currently_chosen_user_id")
+        }
+        val gson = Gson()
+        val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+        userImagesIdsPairList = gson.fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+        val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+        svgImageList = gson.fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+        val svgImageDescriptionType = object : TypeToken<List<SvgImageDescription>>() {}.type
+        svgImageDescriptionList = gson.fromJson<ArrayList<SvgImageDescription>>(AppPreferences.descriptionList, svgImageDescriptionType)
+        val imageIdTestsForImageType = object : TypeToken<List<ImageIdTestsForImage>>() {}.type
+        imageTestList = gson.fromJson<ArrayList<ImageIdTestsForImage>>(AppPreferences.testList, imageIdTestsForImageType)
+        for(item in userImagesIdsPairList!!){
+            if(currentRemoteStudentId!=null && AppPreferences.appMode == 2){
+                if(currentRemoteStudentId == item.userId)
+                    currentUserImageIdsPair = item
+            }else{
+                if(AppPreferences.chosenUser == item.userId)
+                    currentUserImageIdsPair = item
+            }
+        }
+        currentUserSvgImageList?.clear()
+        for(item in currentUserImageIdsPair?.svgIdListFromServer!!){
+            for(item1 in svgImageList!!){
+                if(item == item1.svgId){
+                    currentUserSvgImageList?.add(item1)
+                }
+            }
+        }
+    }
+
+    private fun getAnswersForQuestions(): ChosenAnswersForQuestion?{
+        if(chosenAnswersForTest!=null && chosenAnswersForTest?.listOfQuestions!= null){
+            for(item in chosenAnswersForTest?.listOfQuestions!!){
+                if(item.questionId == question?.questionId){
+                    return item
+                }
+            }
+        }
+        return null
     }
 
 
     private fun initializeAnswerList(){
         answerNameList?.clear()
-        for(item in question?.answerList!!){
-            answerNameList?.add(item.answerDescription!!)
-            chosenAnswers?.add(AnswerChosen(item.answerId,false))
+        if(checkIfItemIsOnList()){
+            val restOfChosenAnswers: ArrayList<AnswerChosen>? = ArrayList()
+            for(item in chosenAnswersForQuestion?.listOfAnswers!!){
+                if(item.isChosen!!){
+                    chosenAnswers?.add(item)
+                }else{
+                    restOfChosenAnswers?.add(item)
+                }
+            }
+            chosenAnswers?.addAll(restOfChosenAnswers!!)
+            for(item in chosenAnswers!!){
+                for(item1 in question?.answerList!!.withIndex()){
+                    if(item.answerId == item1.value.answerId){
+                        answerNameList?.add(AnswerListItem(item1.index, item1.value.answerId, item1.value.answerDescription))
+                    }
+                }
+            }
+        }else{
+            for(item in question?.answerList!!.withIndex()){
+                answerNameList?.add(AnswerListItem(item.index, item.value.answerId,item.value.answerDescription))
+                chosenAnswers?.add(AnswerChosen(item.value.answerId,false))
+            }
         }
     }
 
+    private fun getChosenAnswer(id: Int): AnswerChosen?{
+        for(item in chosenAnswers!!){
+            if(item.answerId == id){
+                return item
+            }
+        }
+        return null
+    }
+
     private fun checkIfItemIsOnList(): Boolean{
-        for(item in chosenAnswersForTest?.listOfQuestions!!){
-            if(item.questionId == question?.questionId){
-                return true
+        if(chosenAnswersForTest!=null && chosenAnswersForTest?.listOfQuestions!= null) {
+            for (item in chosenAnswersForTest?.listOfQuestions!!) {
+                if (item.questionId == question?.questionId) {
+                    return true
+                }
             }
         }
         return false
@@ -201,7 +286,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
                     when (clickCountBack) {
                         1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_back))
                         2 -> {
-                            textToSpeechSingleton?.speakSentence("Odpowiedzi zostały zapisane")
+                            textToSpeechSingleton?.speakSentence("Odpowiedzi zapisane")
                             if(chosenAnswersForTest?.listOfQuestions == null) chosenAnswersForTest?.listOfQuestions = ArrayList()
                             if(checkIfItemIsOnList()){
                                 chosenAnswersForTest?.listOfQuestions?.remove(checkItemIdOnList())
@@ -355,7 +440,12 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         if(currentlyChosenAnswerId>answerListSize){
             currentlyChosenAnswerId = 0
         }
-        textToSpeechSingleton?.speakSentence("Wybrana odpowiedź to ${answerNameList?.get(currentlyChosenAnswerId)}")
+        val currentPrefix = if(getChosenAnswer(answerNameList?.get(currentlyChosenAnswerId)?.itemIdAnswer!!)?.isChosen!!){
+            "Wybrano"
+        }else{
+            "Nie wybrano"
+        }
+        textToSpeechSingleton?.speakSentence("$currentPrefix ${answerNameList?.get(currentlyChosenAnswerId)?.answerDescriptionString}")
     }
 
     fun choosePreviousQuestion(){
@@ -364,16 +454,12 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         if(currentlyChosenAnswerId<0){
             currentlyChosenAnswerId = answerListSize
         }
-        textToSpeechSingleton?.speakSentence("Wybrany odpowiedź to ${answerNameList?.get(currentlyChosenAnswerId)}")
-    }
-
-    private fun getCurrentAnswer(): Answer? {
-        for(item in question?.answerList!!){
-            if(item.answerDescription == answerNameList?.get(currentlyChosenAnswerId)){
-                return item
-            }
+        val currentPrefix = if(getChosenAnswer(answerNameList?.get(currentlyChosenAnswerId)?.itemIdAnswer!!)?.isChosen!!){
+            "Wybrano"
+        }else{
+            "Nie wybrano"
         }
-        return null
+        textToSpeechSingleton?.speakSentence("$currentPrefix ${answerNameList?.get(currentlyChosenAnswerId)?.answerDescriptionString}")
     }
 
     fun sendClickDetails(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, questionId: Int){
@@ -388,6 +474,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
                 Y = event.y.toLong()
                 Log.e("Kliknięto", "ID: $selectedId x $X y $Y")
                 sendClickDetails(X,Y, selectedId, svgImage?.svgId!!, test?.testId!!, question?.questionId!!)
+                signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!, test?.testId!!, question?.questionId!!).toString())
             }
         }
         return super.dispatchTouchEvent(event)
@@ -606,5 +693,49 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
     override fun onClick(click: String) {
         Log.i("","Click $click")
     }
+
+    override fun onImageChange(imageId: Int) {
+        runOnUiThread {
+            if(AppPreferences.appMode == 1){
+                AppPreferences.chosenTask = Gson().toJson(getCurrentTask(imageId))
+                AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(imageId))
+                AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(imageId))
+                //AppPreferences.chosenTaskId = currentlyChosenTaskID
+                Hawk.put("Is_task_from_teacher", true)
+                val myIntent = Intent(this@AnswerActivity, ShowSvgActivity::class.java)
+                this@AnswerActivity.startActivity(myIntent)
+                finish()
+            }
+        }
+    }
+
+
+    private fun getCurrentTask(svgId: Int): SvgImage?{
+        for(item in currentUserSvgImageList!!){
+            if(item.svgId == svgId){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTaskDescription(id: Int): SvgImageDescription?{
+        for(item in svgImageDescriptionList!!){
+            if(id == item.svgId){
+                return item
+            }
+        }
+        return null
+    }
+
+    private fun getCurrentTaskTests(id:Int): Tests? {
+        for(item in imageTestList!!){
+            if(id == item.imageId){
+                return item.tests
+            }
+        }
+        return null
+    }
+
 
 }
