@@ -32,7 +32,9 @@ import org.linphone.core.tools.Log
 import pl.polsl.MathHelper.App
 import pl.polsl.MathHelper.adapters.CustomAdapter
 import pl.polsl.MathHelper.ui.userListActivity.UserListActivity
+import pl.polsl.MathHelper.utils.AppStatus
 import pl.polsl.MathHelper.utils.signalRHelper
+import java.lang.Exception
 import javax.inject.Inject
 
 class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigator, signalRHelper.SignalRCallbacks {
@@ -82,7 +84,13 @@ class ChooseTaskActivity : AppCompatActivity(), ChooseTaskView,ChooseTaskNavigat
         initializeRecyclerView()
         signalRHelperClass = signalRHelper(this)
         val serverToken = Hawk.get<String>("Server_Token")
-        signalRHelperClass?.signalr(serverToken)
+        if(AppStatus.getInstance(this).isOnline){
+            try {
+                signalRHelperClass?.signalr(serverToken)
+            }catch (e: Exception){
+                e.printStackTrace()
+            }
+        }
         if(!Hawk.get<Boolean>("Is_In_Call")){
             var phoneNumber: String? = null
             if (AppPreferences.appMode == 2){

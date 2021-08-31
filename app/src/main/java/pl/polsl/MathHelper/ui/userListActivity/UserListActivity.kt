@@ -30,6 +30,7 @@ import pl.polsl.MathHelper.ui.mainActivity.MainActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.utils.*
 import pl.polsl.MathHelper.utils.VoIPHelperMethods.Companion.outgoingCall
+import java.lang.Exception
 import javax.inject.Inject
 
 
@@ -70,7 +71,13 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         if (AppPreferences.chosenStudent != -1) currentlyChosenUserID = AppPreferences.chosenStudent - 1
         signalRHelperClass = signalRHelper(this)
         val serverToken = Hawk.get<String>("Server_Token")
-        signalRHelperClass?.signalr(serverToken)
+        if(AppStatus.getInstance(this).isOnline){
+            try {
+                signalRHelperClass?.signalr(serverToken)
+            }catch (e: Exception){
+                e.printStackTrace()
+            }
+        }
         presenter.getUserListFromServer(queue!!, serverToken)
         initializeRecyclerView()
     }

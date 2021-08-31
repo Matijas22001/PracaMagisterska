@@ -44,6 +44,7 @@ import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
 import pl.polsl.MathHelper.ui.userListActivity.UserListActivity
 import pl.polsl.MathHelper.utils.*
+import java.lang.Exception
 import javax.inject.Inject
 
 
@@ -162,7 +163,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
             }
         } else {
             //if(AppStatus.getInstance(this).isOnline) {
-                clearAppData()
+                //clearAppData()
                 if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID =
                     AppPreferences.chosenSectionId
                 queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
@@ -307,12 +308,33 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 }
             })
             button.setOnClickListener {
-                presenter.loginUser(queue!!, insertedUsername!!, etPassword?.text.toString(), dialog)
+                insertedPassword = etPassword?.text.toString()
+                if(AppStatus.getInstance(this).isOnline) {
+                    presenter.loginUser(queue!!, insertedUsername!!, insertedPassword!!, dialog)
+                    ViewUtils.fullScreenCall(dialog.window!!)
+                    ViewUtils.fullScreenCall(window)
+                }else{
+                    if(AppPreferences.lastLogin == insertedUsername && AppPreferences.lastPassword == insertedPassword){
+                        textToSpeechSingleton?.speakSentence("Brak połączenia internetowego, uruchomiono tryb offline")
+                        Hawk.put("Is_Logged_In", true)
+                        val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+                        userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+                        val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+                        svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+                        inicializeList()
+                        initializeRecyclerView()
+                    } else {
+                        textToSpeechSingleton?.speakSentence("Podane dane nie są zgodne z ostatnim użytkownikiem, tryb offline nie jest dostepny")
+                    }
+                    ViewUtils.fullScreenCall(dialog.window!!)
+                    ViewUtils.fullScreenCall(window)
+                }
                 dialog.dismiss()
             }
         }
         hideKeyboard(this)
         ViewUtils.fullScreenCall(dialog.window!!)
+        ViewUtils.fullScreenCall(window)
         dialog.show()
     }
 
@@ -520,13 +542,21 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
 
 
     override fun userLoggedInSuccessfulLogic(loginResponse: LoginResponse, dialog: AlertDialog) {
-        asasasas
+        AppPreferences.lastLogin = insertedUsername!!
+        AppPreferences.lastPassword = insertedPassword!!
+        clearAppData()
         ViewUtils.fullScreenCall(window)
         loginResponseSaved = loginResponse
         serverToken =  loginResponse.token
         Hawk.put("Server_Token",serverToken)
         Hawk.put("Is_Logged_In", true)
-        signalRHelperClass?.signalr(serverToken)
+        if(AppStatus.getInstance(this).isOnline){
+            try {
+                signalRHelperClass?.signalr(serverToken)
+            }catch (e: Exception){
+                e.printStackTrace()
+            }
+        }
         if(loginResponse.user?.studentId!=null){
             textToSpeechSingleton?.speakSentence("Zalogowano pomyślnie, pobieranie danych")
             AppPreferences.appMode = 1

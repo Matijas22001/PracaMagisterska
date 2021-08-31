@@ -28,8 +28,10 @@ import pl.polsl.MathHelper.model.SvgImageDescription
 import pl.polsl.MathHelper.model.Tests
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
 import pl.polsl.MathHelper.utils.AppPreferences
+import pl.polsl.MathHelper.utils.AppStatus
 import pl.polsl.MathHelper.utils.ViewUtils
 import pl.polsl.MathHelper.utils.signalRHelper
+import java.lang.Exception
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import javax.inject.Inject
@@ -84,7 +86,13 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
         df.roundingMode = RoundingMode.CEILING
         signalRHelperClass = signalRHelper(this)
         val serverToken = Hawk.get<String>("Server_Token")
-        signalRHelperClass?.signalr(serverToken)
+        if(AppStatus.getInstance(this).isOnline){
+            try {
+                signalRHelperClass?.signalr(serverToken)
+            }catch (e: Exception){
+                e.printStackTrace()
+            }
+        }
         if(!Hawk.get<Boolean>("Is_In_Call")){
             var phoneNumber: String? = null
             if (AppPreferences.appMode == 2){

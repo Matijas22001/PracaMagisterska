@@ -149,7 +149,13 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
         initializeWebView()
         signalRHelperClass = signalRHelper(this)
         val serverToken = Hawk.get<String>("Server_Token")
-        signalRHelperClass?.signalr(serverToken)
+        if(AppStatus.getInstance(this).isOnline){
+            try {
+                signalRHelperClass?.signalr(serverToken)
+            }catch (e: java.lang.Exception){
+                e.printStackTrace()
+            }
+        }
         if(!Hawk.get<Boolean>("Is_In_Call")){
             var phoneNumber: String? = null
             if (AppPreferences.appMode == 2){
