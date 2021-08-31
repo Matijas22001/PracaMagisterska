@@ -103,6 +103,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     var etPassword: TextView? = null
 
     var insertedUsername: String? = null
+    var insertedPassword: String? = null
 
     var signalRHelperClass: signalRHelper? = null
     var loginResponseSaved: LoginResponse? = null
@@ -123,7 +124,6 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         ViewUtils.fullScreenCall(window)
         signalRHelperClass = signalRHelper(this)
         initializeOnClicks()
-        pxFromDp(this, 30F)
         if (userImagesIdsPairList == null) userImagesIdsPairList = ArrayList()
         if (svgImageList == null) svgImageList = ArrayList()
         if (svgDescriptionList == null) svgDescriptionList = ArrayList()
@@ -161,7 +161,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 }
             }
         } else {
-            if(AppStatus.getInstance(this).isOnline) {
+            //if(AppStatus.getInstance(this).isOnline) {
                 clearAppData()
                 if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID =
                     AppPreferences.chosenSectionId
@@ -177,14 +177,14 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 displayLoginUsernamePrompt()
                 hideKeyboard(this)
                 initializeRecyclerView()
-            }else{
-                val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
-                userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
-                val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
-                svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
-                inicializeList()
-                initializeRecyclerView()
-            }
+            //}else{
+            //    val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+            //    userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+            //    val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+            //    svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+            //    inicializeList()
+            //    initializeRecyclerView()
+            //}
         }
     }
 
@@ -520,6 +520,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
 
 
     override fun userLoggedInSuccessfulLogic(loginResponse: LoginResponse, dialog: AlertDialog) {
+        asasasas
         ViewUtils.fullScreenCall(window)
         loginResponseSaved = loginResponse
         serverToken =  loginResponse.token
@@ -645,11 +646,6 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         AppPreferences.chosenQuestionId = -1
         AppPreferences.chosenAnswerId = -1
     }
-
-    fun pxFromDp(context: Context, dp: Float): Float {
-        return dp * context.resources.displayMetrics.density
-    }
-
 
     fun login(userName:String) {
         val domain = "157.158.57.43"

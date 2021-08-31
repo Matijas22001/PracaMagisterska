@@ -35,6 +35,8 @@ object AppPreferences {
     private val APP_MODE = Pair("APP_MODE", 0)
     private val CURRENTLY_CHOSEN_STUDENT_ID = Pair("CURRENTLY_CHOSEN_STUDENT_ID", -1)
     private val CURRENT_POINTS_NUMBER = Pair("CURRENT_POINTS_NUMBER", 3)
+    private val LAST_LOGGED_IN_USER_NAME = Pair("LAST_LOGGED_IN_USER_NAME", "")
+    private val LAST_LOGGED_IN_PASSWORD = Pair("LAST_LOGGED_IN_PASSWORD", "")
 
     fun init(context: Context) {
         preferences = context.getSharedPreferences(NAME, MODE)
@@ -45,6 +47,18 @@ object AppPreferences {
         operation(editor)
         editor.apply()
     }
+
+    var lastLogin: String
+        get() = preferences.getString(LAST_LOGGED_IN_USER_NAME.first, LAST_LOGGED_IN_USER_NAME.second)!!
+        set(value) = preferences.edit {
+            it.putString(LAST_LOGGED_IN_USER_NAME.first, value)
+        }
+
+    var lastPassword: String
+        get() = preferences.getString(LAST_LOGGED_IN_PASSWORD.first, LAST_LOGGED_IN_PASSWORD.second)!!
+        set(value) = preferences.edit {
+            it.putString(LAST_LOGGED_IN_PASSWORD.first, value)
+        }
 
     var chosenStudent: Int
         get() = preferences.getInt(CURRENTLY_CHOSEN_STUDENT_ID.first, CURRENTLY_CHOSEN_STUDENT_ID.second)
