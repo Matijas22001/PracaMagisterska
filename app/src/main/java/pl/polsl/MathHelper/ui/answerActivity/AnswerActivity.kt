@@ -70,8 +70,6 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
     var currentUserImageIdsPair: UserImageIdsPair? = null
 
     var currentRemoteStudentId: Int? = null
-    var maxViewsCount: Int? = 3
-    var currentViewsCount: Int? = 0
     var viewsList: ArrayList<View>? = null
 
     @Inject
@@ -695,7 +693,7 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
     override fun onClick(click: String) {
         runOnUiThread {
             if(AppPreferences.appMode == 2){
-                if(viewsList?.size == maxViewsCount){
+                if(viewsList?.size == AppPreferences.pointNumber){
                     wv_image_show_svg.removeView(viewsList?.first())
                     viewsList?.remove(viewsList?.first())
                 }

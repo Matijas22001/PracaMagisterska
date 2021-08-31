@@ -49,7 +49,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
     private var chosenSetting: String? = null
     private var currentlyChosenSetting: Int = 0
     private var stringAdapter: CustomAdapter? = null
-    private var workingMode = 0 //0 - choose setting, 1 - voice speed, 2 - click interval, 3 - line thickness,  4 - quitApp
+    private var workingMode = 0 //0 - choose setting, 1 - voice speed, 2 - click interval, 3 - line thickness,  4 - quitApp, 5 - finish current call, 6 - points shown
     val df = DecimalFormat("#.##")
     var signalRHelperClass: signalRHelper? = null
     var userImagesIdsPairList: ArrayList<UserImageIdsPair>? = null
@@ -187,6 +187,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
                                 3->textToSpeechSingleton?.speakSentence("Zmniejsz grubość linii")
                                 4->textToSpeechSingleton?.speakSentence("Ustawienie to wyjście z aplikacji. Brak operacji.")
                                 5->textToSpeechSingleton?.speakSentence("Ustawienie to zakończenie rozmowy. Brak operacji.")
+                                6->textToSpeechSingleton?.speakSentence("Zmniejsz ilość punktów")
                             }
                         }
                         2 -> {
@@ -215,6 +216,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
                                 3->textToSpeechSingleton?.speakSentence("Zwiększ grubość linii")
                                 4->textToSpeechSingleton?.speakSentence("Ustawienie to wyjście z aplikacji. Brak operacji.")
                                 5->textToSpeechSingleton?.speakSentence("Ustawienie to zakończenie rozmowy. Brak operacji.")
+                                6->textToSpeechSingleton?.speakSentence("Zwiększ ilość punktów")
                             }
                         }
                         2-> {
@@ -316,6 +318,10 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
             }
             4->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
             5->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyłączenie rozmowy. Brak operacji do wykonania.")
+            6->{
+                decrementPointsNumber()
+                textToSpeechSingleton?.speakSentence("Obecny ilość punktów " + AppPreferences.pointNumber)
+            }
         }
     }
 
@@ -335,6 +341,10 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
             }
             4->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyjście z aplikacji. Brak operacji do wykonania.")
             5->textToSpeechSingleton?.speakSentence("Wybrane ustawienie to wyłączenie rozmowy. Brak operacji do wykonania.")
+            6->{
+                incrementPointsNumber()
+                textToSpeechSingleton?.speakSentence("Obecny ilość punktów " + AppPreferences.pointNumber)
+            }
         }
     }
 
@@ -347,6 +357,7 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
             3 -> textToSpeechSingleton?.speakSentence("Ustawienia - Zmiana grubości linii")
             4 -> textToSpeechSingleton?.speakSentence("Ustawienia - Wyjście z aplikacji")
             5 -> textToSpeechSingleton?.speakSentence("Ustawienia - Zakończenie połączenia")
+            6 -> textToSpeechSingleton?.speakSentence("Ustawienia - Zmiana ilości punktów")
         }
     }
 
@@ -381,6 +392,10 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
                core.currentCall?.terminate()
                workingMode = 0
                Hawk.put("Is_In_Call",false)
+           }
+           6 -> {
+               textToSpeechSingleton?.speakSentence("Nowe ustawienie zostało zapisane")
+               workingMode = 0
            }
        }
     }
@@ -426,12 +441,25 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
         }
     }
 
+    private fun incrementPointsNumber(){
+        if(AppPreferences.pointNumber in 1..14){
+            AppPreferences.pointNumber += 1
+        }
+    }
+
+    private fun decrementPointsNumber(){
+        if(AppPreferences.pointNumber in 2..15){
+            AppPreferences.pointNumber -= 1
+        }
+    }
+
     private fun mockInicializeLists() {
         settingsList.add("Prędkość mowy")
         settingsList.add("Czas pomiędzy przyciśnięciami")
         settingsList.add("Grubość linii")
         settingsList.add("Wyjście z aplikacji")
         settingsList.add("Zakończ obecną rozmowę")
+        settingsList.add("Zmień ilość wyświetlanych punktów")
     }
 
     override fun showMessage(resId: Int) {}
@@ -449,15 +477,15 @@ class SettingsActivity: AppCompatActivity(), SettingsView, SettingsNavigator, si
         accountParams.serverAddress = address
         accountParams.registerEnabled = true
         val account = App.core.createAccount(accountParams)
-        App.core.addAuthInfo(authInfo)
-        App.core.addAccount(account)
-        App.core.defaultAccount = account
-        App.core.addListener(coreListener)
+        core.addAuthInfo(authInfo)
+        core.addAccount(account)
+        core.defaultAccount = account
+        core.addListener(coreListener)
         account.addListener { _, state, message ->
             Log.i("[Account] Registration state changed: $state, $message")
         }
         // Finally we need the Core to be started for the registration to happen (it could have been started before)
-        App.core.start()
+        core.start()
     }
 
     private val coreListener = object: CoreListenerStub() {

@@ -34,6 +34,7 @@ object AppPreferences {
     private val IS_USER_LOGGED_IN = Pair("IS_USER_LOGGED_IN", false)
     private val APP_MODE = Pair("APP_MODE", 0)
     private val CURRENTLY_CHOSEN_STUDENT_ID = Pair("CURRENTLY_CHOSEN_STUDENT_ID", -1)
+    private val CURRENT_POINTS_NUMBER = Pair("CURRENT_POINTS_NUMBER", 3)
 
     fun init(context: Context) {
         preferences = context.getSharedPreferences(NAME, MODE)
@@ -61,6 +62,12 @@ object AppPreferences {
         get() = preferences.getInt(APP_MODE.first, APP_MODE.second)
         set(value) = preferences.edit {
             it.putInt(APP_MODE.first, value)
+        }
+
+    var pointNumber: Int
+        get() = preferences.getInt(CURRENT_POINTS_NUMBER.first, CURRENT_POINTS_NUMBER.second)
+        set(value) = preferences.edit {
+            it.putInt(CURRENT_POINTS_NUMBER.first, value)
         }
 
     var chosenSubjectId: Int
