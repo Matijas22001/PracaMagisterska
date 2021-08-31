@@ -5,12 +5,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_user_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/menu_bar_layout"
-        android:layout_alignParentTop="true" />
+        android:layout_below="@id/tvStatus"
+        android:layout_alignParentTop="false">
+
+    </androidx.recyclerview.widget.RecyclerView>
 
     <include
         android:id="@+id/menu_bar_layout"

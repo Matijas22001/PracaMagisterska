@@ -1,5 +1,6 @@
 package pl.polsl.MathHelper.utils
 
+import org.linphone.core.AudioDevice
 import pl.polsl.MathHelper.App.Companion.core
 import org.linphone.core.Factory
 import org.linphone.core.MediaEncryption
@@ -57,7 +58,7 @@ class VoIPHelperMethods {
             // Finally we start the call
             core.inviteAddressWithParams(remoteAddress, params)
             // Call process can be followed in onCallStateChanged callback from core listener
-        }
 
+        }
     }
 }

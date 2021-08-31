@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -20,6 +21,7 @@ import kotlinx.android.synthetic.main.menu_bar.*
 import org.linphone.core.*
 import org.linphone.core.tools.Log
 import pl.polsl.MathHelper.App
+import pl.polsl.MathHelper.App.Companion.core
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
 import pl.polsl.MathHelper.adapters.UserListAdapter
@@ -47,7 +49,6 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     private var clickCountSettings = 0
     private var clickCountTest = 0
     val gson = Gson()
-    private lateinit var core: Core
     var signalRHelperClass: signalRHelper? = null
 
     @BindView(R.id.rv_user_list)
@@ -94,9 +95,9 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
             state: Call.State?,
             message: String
         ) {
+            findViewById<TextView>(R.id.tvStatus).text = state?.name.toString()
             when (state) {
                 Call.State.StreamsRunning -> {
-                    core.enableMic(true)
                     toggleSpeaker()
                 }
             }
@@ -111,9 +112,6 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
             }
         }
     }
-
-
-
 
     private fun initializeRecyclerView() {
         linearLayoutManager = LinearLayoutManager(this)
@@ -236,13 +234,28 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                 override fun onFinish() {
                     when (clickCountTest) {
                         1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_T))
-                        2 -> textToSpeechSingleton?.speakSentence("Lista zalogowanych użytkowników")
+                        //2 -> textToSpeechSingleton?.speakSentence("Lista zalogowanych użytkowników")
+                        2 -> {
+                            hangUp()
+                        }
                     }
                     clickCountTest = 0
                 }
             }.start()
         }
     }
+
+    private fun hangUp() {
+        if (core.callsNb == 0) return
+
+        // If the call state isn't paused, we can get it using core.currentCall
+        val call = if (core.currentCall != null) core.currentCall else core.calls[0]
+        call ?: return
+
+        // Terminating a call is quite simple
+        call.terminate()
+    }
+
 
     fun chooseNextUser() {
         val studentListSize = studentList?.size!! - 1
@@ -295,27 +308,26 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     fun login(userName:String) {
         val domain = "157.158.57.43"
         val authInfo = Factory.instance().createAuthInfo(userName, null, userName, null, null, domain, null)
-        val accountParams = App.core.createAccountParams()
+        val accountParams = core.createAccountParams()
         val identity = Factory.instance().createAddress("sip:$userName@$domain")
         accountParams.identityAddress = identity
         val address = Factory.instance().createAddress("sip:$domain")
         address?.transport = TransportType.Udp
         accountParams.serverAddress = address
         accountParams.registerEnabled = true
-        val account = App.core.createAccount(accountParams)
-        App.core.addAuthInfo(authInfo)
-        App.core.addAccount(account)
-        App.core.defaultAccount = account
-        App.core.addListener(coreListener)
+        val account = core.createAccount(accountParams)
+        core.addAuthInfo(authInfo)
+        core.addAccount(account)
+        core.defaultAccount = account
+        core.addListener(coreListener)
         account.addListener { _, state, message ->
             Log.i("[Account] Registration state changed: $state, $message")
         }
-        App.core.start()
+        core.start()
         if (packageManager.checkPermission(Manifest.permission.RECORD_AUDIO, packageName) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 0)
             return
         }
-
     }
 
     override fun showMessage(resId: Int) {}

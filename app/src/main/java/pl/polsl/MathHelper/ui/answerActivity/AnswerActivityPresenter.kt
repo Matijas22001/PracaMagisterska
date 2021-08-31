@@ -14,10 +14,10 @@ import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
 
 class AnswerActivityPresenter(private val view: AnswerActivityView?, private val navigator: AnswerActivityNavigator?){
-    fun sendImageClickDataToServer(queue: RequestQueue, x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, questionId: Int, token: String){
-        val url = "http://157.158.57.124:50820/api/device/Clicks/SaveClicks"
+    fun sendImageClickDataToServer(queue: RequestQueue, x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, questionId: Int, token: String, type: Int){
+        val url = "http://157.158.57.124:50820/api/MotionLog/SaveClicks"
         val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
-            Method.POST, url, createPOSTObject(x, y, elementId, fileId, testId, questionId),
+            Method.POST, url, createPOSTObject(x, y, elementId, fileId, testId, questionId, type),
             Response.Listener { response ->
                 Log.i("Click", "Saved")
             }, Response.ErrorListener { error ->
@@ -32,7 +32,7 @@ class AnswerActivityPresenter(private val view: AnswerActivityView?, private val
         queue.add(jsonObjectRequest)
     }
 
-    private fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, questionId: Int): JSONObject? {
+    private fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, questionId: Int, type: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser
@@ -43,6 +43,7 @@ class AnswerActivityPresenter(private val view: AnswerActivityView?, private val
             click.testId = testId
             click.questionId = questionId
             click.timeStamp = getTime()
+            click.type = type
             val tempList: ArrayList<Click> = ArrayList()
             tempList.add(click)
             JSONObject(Gson().toJson(ClickSendObject(tempList)))

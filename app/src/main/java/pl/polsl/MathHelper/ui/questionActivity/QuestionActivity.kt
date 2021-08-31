@@ -22,9 +22,6 @@ import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForTest
 import pl.polsl.MathHelper.ui.answerActivity.AnswerActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.ui.testActivity.TestActivity
-import pl.polsl.MathHelper.utils.AppPreferences
-import pl.polsl.MathHelper.utils.ViewUtils
-import pl.polsl.MathHelper.utils.VolleySingleton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.orhanobut.hawk.Hawk
@@ -43,7 +40,7 @@ import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
 import pl.polsl.MathHelper.model.*
 import pl.polsl.MathHelper.ui.mainActivity.MainActivity
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
-import pl.polsl.MathHelper.utils.signalRHelper
+import pl.polsl.MathHelper.utils.*
 import javax.inject.Inject
 
 class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, QuestionActivityView, signalRHelper.SignalRCallbacks {
@@ -74,6 +71,9 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
     var currentUserImageIdsPair: UserImageIdsPair? = null
 
     var currentRemoteStudentId: Int? = null
+    var maxViewsCount: Int? = 3
+    var currentViewsCount: Int? = 0
+    var viewsList: ArrayList<View>? = null
 
     @Inject
     lateinit var presenter: QuestionActivityPresenter
@@ -149,6 +149,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         ViewUtils.fullScreenCall(window)
         initializeOnClicks()
         if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
+        if(viewsList == null) viewsList = ArrayList()
         inicializeListRemote()
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
         svgImageDescription = Gson().fromJson(AppPreferences.chosenTaskDescription, SvgImageDescription::class.java)
@@ -403,9 +404,9 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
     }
 
 
-    fun sendClickDetails(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int){
+    fun sendClickDetails(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, type: Int){
         val serverToken = Hawk.get<String>("Server_Token")
-        presenter.sendImageClickDataToServer(queue!!, x, y, elementId, fileId, testId, serverToken)
+        presenter.sendImageClickDataToServer(queue!!, x, y, elementId, fileId, testId, serverToken, type)
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -414,14 +415,14 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                 X = event.x.toLong()
                 Y = event.y.toLong()
                 Log.e("Kliknięto", "ID: $selectedId x $X y $Y")
-                sendClickDetails(X, Y, selectedId, svgImage?.svgId!!, test?.testId!!)
-                signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!, test?.testId!!).toString())
+                sendClickDetails(X, Y, selectedId, svgImage?.svgId!!, test?.testId!!,1)
+                signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!, test?.testId!!,1).toString())
             }
         }
         return super.dispatchTouchEvent(event)
     }
 
-    fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int): JSONObject? {
+    fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, type: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser
@@ -431,6 +432,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
             click.elementId = elementId
             click.testId = testId
             click.timeStamp = getTime()
+            click.type = type
             val tempList: ArrayList<Click> = ArrayList()
             tempList.add(click)
             JSONObject(Gson().toJson(ClickSendObject(tempList)))
@@ -448,8 +450,8 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
             val x = activity?.X
             val y = activity?.Y
             Log.e("Kliknięto", "ID: $content x $x y $y")
-            activity?.sendClickDetails(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!)
-            activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!).toString())
+            activity?.sendClickDetails(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!, activity?.clickCount!!)
+            activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!, activity?.clickCount!!).toString())
             activity?.selectedId = content
             activity?.mCountDownTimer?.start()
         }
@@ -666,6 +668,30 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
     }
 
     override fun onClick(click: String) {
+        runOnUiThread {
+            if(AppPreferences.appMode == 2){
+                if(viewsList?.size == maxViewsCount){
+                    wv_image_show_svg.removeView(viewsList?.first())
+                    viewsList?.remove(viewsList?.first())
+                }
+                val clickResponse = Gson().fromJson(click, ClickSendObject::class.java)
+                val x = clickResponse.click?.get(0)?.x
+                val y = clickResponse.click?.get(0)?.y
+                val elementId = clickResponse.click?.get(0)?.elementId
+                if(elementId != null && elementId != ""){
+                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
+                    textToSpeechSingleton?.speakSentence("Uczeń kliknął element o id $elementId")
+                    val circleView: View = CircleGreen(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
+                    wv_image_show_svg.addView(circleView)
+                    viewsList?.add(circleView)
+                }else{
+                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
+                    val circleView: View = CircleRed(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
+                    wv_image_show_svg.addView(circleView)
+                    viewsList?.add(circleView)
+                }
+            }
+        }
         Log.i("","Click $click")
     }
 

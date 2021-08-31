@@ -12,6 +12,7 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -42,10 +43,7 @@ import pl.polsl.MathHelper.ui.chooseTaskActivity.ChooseTaskActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
 import pl.polsl.MathHelper.ui.userListActivity.UserListActivity
-import pl.polsl.MathHelper.utils.AppPreferences
-import pl.polsl.MathHelper.utils.ViewUtils
-import pl.polsl.MathHelper.utils.VolleySingleton
-import pl.polsl.MathHelper.utils.signalRHelper
+import pl.polsl.MathHelper.utils.*
 import javax.inject.Inject
 
 
@@ -148,36 +146,45 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 presenter.getUserImageIdsFromServer(queue!!, currentRemoteStudentId!!, token)
                 initializeRecyclerView()
             } else {
-                //if(isNetworkConnected()){
-                textToSpeechSingleton?.speakSentence("Pobieranie danych, proszę czekać")
-                val token = Hawk.get<String>("Server_Token")
-                serverToken = token
-                presenter.getUserImageIdsFromServer(queue!!, AppPreferences.chosenUser, token)
-                initializeRecyclerView()
-                //}else{
-                //    val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
-                //    userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
-                //    val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
-                //    svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
-                //    initializeRecyclerView()
-                //}
+                if(AppStatus.getInstance(this).isOnline){
+                    textToSpeechSingleton?.speakSentence("Pobieranie danych, proszę czekać")
+                    val token = Hawk.get<String>("Server_Token")
+                    serverToken = token
+                    presenter.getUserImageIdsFromServer(queue!!, AppPreferences.chosenUser, token)
+                    initializeRecyclerView()
+                }else{
+                    val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+                    userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+                    val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+                    svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+                    initializeRecyclerView()
+                }
             }
         } else {
-            clearAppData()
-            if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID =
-                AppPreferences.chosenSectionId
-            queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
-            if (textToSpeechSingleton?.isTTSready() == true) {
-                textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
-            } else {
-                val handler = Handler()
-                handler.postDelayed({
+            if(AppStatus.getInstance(this).isOnline) {
+                clearAppData()
+                if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID =
+                    AppPreferences.chosenSectionId
+                queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
+                if (textToSpeechSingleton?.isTTSready() == true) {
                     textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
-                }, 1000)
+                } else {
+                    val handler = Handler()
+                    handler.postDelayed({
+                        textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
+                    }, 1000)
+                }
+                displayLoginUsernamePrompt()
+                hideKeyboard(this)
+                initializeRecyclerView()
+            }else{
+                val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
+                userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
+                val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
+                svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
+                inicializeList()
+                initializeRecyclerView()
             }
-            displayLoginUsernamePrompt()
-            hideKeyboard(this)
-            initializeRecyclerView()
         }
     }
 
@@ -271,7 +278,6 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 dialog.dismiss()
             }
         }
-
         hideKeyboard(this)
         ViewUtils.fullScreenCall(dialog.window!!)
         dialog.show()
@@ -656,15 +662,15 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         accountParams.serverAddress = address
         accountParams.registerEnabled = true
         val account = App.core.createAccount(accountParams)
-        App.core.addAuthInfo(authInfo)
-        App.core.addAccount(account)
-        App.core.defaultAccount = account
-        App.core.addListener(coreListener)
+        core.addAuthInfo(authInfo)
+        core.addAccount(account)
+        core.defaultAccount = account
+        core.addListener(coreListener)
         account.addListener { _, state, message ->
             Log.i("[Account] Registration state changed: $state, $message")
         }
         // Finally we need the Core to be started for the registration to happen (it could have been started before)
-        App.core.start()
+        core.start()
     }
 
     private val coreListener = object: CoreListenerStub() {

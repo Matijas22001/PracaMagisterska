@@ -53,10 +53,10 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
         }
     }
 
-    fun sendImageClickDataToServer(queue: RequestQueue, x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, token: String){
-        val url = "http://157.158.57.124:50820/api/device/Clicks/SaveClicks"
+    fun sendImageClickDataToServer(queue: RequestQueue, x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, token: String, type: Int){
+        val url = "http://157.158.57.124:50820/api/MotionLog/SaveClicks"
         val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
-            Method.POST, url, createPOSTObject(x, y, elementId, fileId, testId),
+            Method.POST, url, createPOSTObject(x, y, elementId, fileId, testId, type),
             Response.Listener { response ->
                 Log.i("Click", "Saved")
             }, Response.ErrorListener { error ->
@@ -71,7 +71,7 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
         queue.add(jsonObjectRequest)
     }
 
-    private fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int): JSONObject? {
+    private fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, type: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser
@@ -81,6 +81,7 @@ class QuestionActivityPresenter(private val view: QuestionActivityView?, private
             click.elementId = elementId
             click.testId = testId
             click.timeStamp = getTime()
+            click.type = type
             val tempList: ArrayList<Click> = ArrayList()
             tempList.add(click)
             JSONObject(Gson().toJson(ClickSendObject(tempList)))

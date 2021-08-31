@@ -27,4 +27,8 @@ class Click: Serializable {
 
     @SerializedName("timeStamp")
     var timeStamp: String? = null
+
+    @SerializedName("type")
+    var type: Int? = null
+
 }

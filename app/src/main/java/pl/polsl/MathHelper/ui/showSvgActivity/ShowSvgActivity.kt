@@ -70,6 +70,9 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
     var currentUserImageIdsPair: UserImageIdsPair? = null
 
     var currentRemoteStudentId: Int? = null
+    var maxViewsCount: Int? = 3
+    var currentViewsCount: Int? = 0
+    var viewsList: ArrayList<View>? = null
 
     @Inject
     lateinit var presenter: ShowSvgActivityPresenter
@@ -116,7 +119,6 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         svgImage?.svgXML = svgImage?.svgXML?.replace("<rect ".toRegex(), "<rect onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<image ".toRegex(), "<image onclick=\"onClickEvent(evt)\" ")
         svgImage?.svgXML = svgImage?.svgXML?.replace("<use .*<\\/use>".toRegex(), "")
-        //val document = getDomElement(svgImage?.svgXML)
 
         val indexEndOfFirstSvgTag: Int = svgImage?.svgXML?.indexOf(">")!!
         val javascriptScript = """<script type="application/ecmascript"> <![CDATA[
@@ -131,30 +133,9 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         }
     }
 
-    fun getDomElement(xml: String?): Document? {
-        var doc: Document? = null
-        val dbf: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
-        doc = try {
-            val db: DocumentBuilder = dbf.newDocumentBuilder()
-            val input = InputSource()
-            input.characterStream = StringReader(xml)
-            db.parse(input)
-        } catch (e: Exception) {
-            Log.e("Error: ", e.printStackTrace().toString())
-            return null
-        }
-        //var nodeList: NodeList = doc?.getElementsByTagName("*")!!
-        val element: Element = doc?.getElementsByTagName("clipPath")?.item(0) as Element
-        val hasAttribute = element.hasAttribute("id")
-        if (hasAttribute){
-            element.removeAttribute("id")
-        }
-        return doc
-    }
-
-    fun sendClickDetails(elementId: String,X: Long?, Y: Long?, fileId: Int){
+    fun sendClickDetails(elementId: String,X: Long?, Y: Long?, fileId: Int, type: Int){
         val serverToken = Hawk.get<String>("Server_Token")
-        presenter.sendImageClickDataToServer(queue!!, X, Y, elementId, fileId, serverToken)
+        presenter.sendImageClickDataToServer(queue!!, X, Y, elementId, fileId, serverToken, type)
     }
 
 
@@ -165,7 +146,8 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         AndroidInjection.inject(this)
         ViewUtils.fullScreenCall(window)
         initializeOnClicks()
-        if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
+        if(currentUserSvgImageList == null) currentUserSvgImageList = ArrayList()
+        if(viewsList == null) viewsList = ArrayList()
         inicializeListRemote()
         queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
@@ -356,15 +338,15 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
                     X = event.x.toLong()
                     Y = event.y.toLong()
                     Log.e("Kliknięto", "ID: $selectedId x $X y $Y")
-                    sendClickDetails(selectedId, X, Y , svgImage?.svgId!!)
-                    signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!).toString())
+                    sendClickDetails(selectedId, X, Y , svgImage?.svgId!!, 1)
+                    signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!,1).toString())
                 }
             }
         return super.dispatchTouchEvent(event)
     }
 
 
-    fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int): JSONObject? {
+    fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, type: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser
@@ -373,6 +355,7 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
             click.y = y
             click.elementId = elementId
             click.timeStamp = getTime()
+            click.type = type
             val tempList: ArrayList<Click> = ArrayList()
             tempList.add(click)
             JSONObject(Gson().toJson(ClickSendObject(tempList)))
@@ -396,8 +379,8 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
             val x = activity?.X
             val y = activity?.Y
             Log.e("Kliknięto", "ID: $content x $x y $y")
-            activity?.sendClickDetails(content, activity?.X, activity?.Y , activity?.svgImage?.svgId!!)
-            activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y ,content, activity?.svgImage?.svgId!!).toString())
+            activity?.sendClickDetails(content, activity?.X, activity?.Y , activity?.svgImage?.svgId!!, activity?.clickCount!!)
+            activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y ,content, activity?.svgImage?.svgId!!, activity?.clickCount!!).toString())
             activity?.selectedId = content
             activity?.mCountDownTimer?.start()
         }
@@ -467,7 +450,6 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         btn_next.isEnabled = false
         btn_previous.isEnabled = false
         btn_settings.isEnabled = false
-        //core.currentCall?.accept()
         btn_select.setOnClickListener {
             clickCountSelect++
             object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
@@ -564,20 +546,25 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
     override fun onClick(click: String) {
         runOnUiThread {
             if(AppPreferences.appMode == 2){
-                wv_image_show_svg.removeAllViews()
+                if(viewsList?.size == maxViewsCount){
+                    wv_image_show_svg.removeView(viewsList?.first())
+                    viewsList?.remove(viewsList?.first())
+                }
                 val clickResponse = Gson().fromJson(click, ClickSendObject::class.java)
                 val x = clickResponse.click?.get(0)?.x
                 val y = clickResponse.click?.get(0)?.y
                 val elementId = clickResponse.click?.get(0)?.elementId
                 if(elementId != null && elementId != ""){
-                    Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
                     textToSpeechSingleton?.speakSentence("Uczeń kliknął element o id $elementId")
                     val circleView: View = CircleGreen(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
                     wv_image_show_svg.addView(circleView)
+                    viewsList?.add(circleView)
                 }else{
-                    Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
                     val circleView: View = CircleRed(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
                     wv_image_show_svg.addView(circleView)
+                    viewsList?.add(circleView)
                 }
             }
         }

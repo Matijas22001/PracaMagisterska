@@ -21,9 +21,6 @@ import pl.polsl.MathHelper.R
 import pl.polsl.MathHelper.ui.questionActivity.QuestionActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
-import pl.polsl.MathHelper.utils.AppPreferences
-import pl.polsl.MathHelper.utils.ViewUtils
-import pl.polsl.MathHelper.utils.VolleySingleton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.orhanobut.hawk.Hawk
@@ -41,7 +38,7 @@ import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
 import pl.polsl.MathHelper.model.*
 import pl.polsl.MathHelper.ui.chooseTaskActivity.ChooseTaskActivity
 import pl.polsl.MathHelper.ui.mainActivity.MainActivity
-import pl.polsl.MathHelper.utils.signalRHelper
+import pl.polsl.MathHelper.utils.*
 import javax.inject.Inject
 
 class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView, signalRHelper.SignalRCallbacks {
@@ -71,6 +68,9 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
     var currentUserImageIdsPair: UserImageIdsPair? = null
 
     var currentRemoteStudentId: Int? = null
+    var maxViewsCount: Int? = 3
+    var currentViewsCount: Int? = 0
+    var viewsList: ArrayList<View>? = null
 
     @Inject
     lateinit var presenter: TestActivityPresenter
@@ -139,6 +139,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
         ViewUtils.fullScreenCall(window)
         initializeOnClicks()
         if(currentUserSvgImageList==null) currentUserSvgImageList = ArrayList()
+        if(viewsList == null) viewsList = ArrayList()
         inicializeListRemote()
         queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
         svgImage = Gson().fromJson(AppPreferences.chosenTask, SvgImage::class.java)
@@ -207,9 +208,9 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
         }
     }
 
-    fun sendClickDetails(x: Long?, y: Long?, elementId: String, fileId: Int){
+    fun sendClickDetails(x: Long?, y: Long?, elementId: String, fileId: Int, type: Int){
         val serverToken = Hawk.get<String>("Server_Token")
-        presenter.sendImageClickDataToServer(queue!!, x, y, elementId, fileId, serverToken)
+        presenter.sendImageClickDataToServer(queue!!, x, y, elementId, fileId, serverToken, type)
     }
 
     fun initializeOnClicks(){
@@ -392,14 +393,14 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
                 X = event.x.toLong()
                 Y = event.y.toLong()
                 Log.e("Kliknięto", "ID: $selectedId x $X y $Y")
-                sendClickDetails(X, Y, selectedId, svgImage?.svgId!!)
-                signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!).toString())
+                sendClickDetails(X, Y, selectedId, svgImage?.svgId!!, 1)
+                signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!, 1).toString())
             }
         }
         return super.dispatchTouchEvent(event)
     }
 
-    fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int): JSONObject? {
+    fun createPOSTObject(x: Long?, y: Long?, elementId: String, fileId: Int, type: Int): JSONObject? {
         return try{
             val click = Click()
             click.studentId = AppPreferences.chosenUser
@@ -408,6 +409,7 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
             click.y = y
             click.elementId = elementId
             click.timeStamp = getTime()
+            click.type = type
             val tempList: ArrayList<Click> = ArrayList()
             tempList.add(click)
             JSONObject(Gson().toJson(ClickSendObject(tempList)))
@@ -428,8 +430,8 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
             val x = activity?.X
             val y = activity?.Y
             Log.e("Kliknięto", "ID: $content x $x y $y")
-            activity?.sendClickDetails(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!)
-            activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y ,content, activity?.svgImage?.svgId!!).toString())
+            activity?.sendClickDetails(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.clickCount!!)
+            activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y ,content, activity?.svgImage?.svgId!!, activity?.clickCount!!).toString())
             activity?.selectedId = content
             activity?.mCountDownTimer?.start()
         }
@@ -599,6 +601,30 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
     }
 
     override fun onClick(click: String) {
+        runOnUiThread {
+            if(AppPreferences.appMode == 2){
+                if(viewsList?.size == maxViewsCount){
+                    wv_image_show_svg.removeView(viewsList?.first())
+                    viewsList?.remove(viewsList?.first())
+                }
+                val clickResponse = Gson().fromJson(click, ClickSendObject::class.java)
+                val x = clickResponse.click?.get(0)?.x
+                val y = clickResponse.click?.get(0)?.y
+                val elementId = clickResponse.click?.get(0)?.elementId
+                if(elementId != null && elementId != ""){
+                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
+                    textToSpeechSingleton?.speakSentence("Uczeń kliknął element o id $elementId")
+                    val circleView: View = CircleGreen(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
+                    wv_image_show_svg.addView(circleView)
+                    viewsList?.add(circleView)
+                }else{
+                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
+                    val circleView: View = CircleRed(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
+                    wv_image_show_svg.addView(circleView)
+                    viewsList?.add(circleView)
+                }
+            }
+        }
         Log.i("","Click $click")
     }
 
