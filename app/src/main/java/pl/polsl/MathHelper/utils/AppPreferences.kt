@@ -37,6 +37,8 @@ object AppPreferences {
     private val CURRENT_POINTS_NUMBER = Pair("CURRENT_POINTS_NUMBER", 3)
     private val LAST_LOGGED_IN_USER_NAME = Pair("LAST_LOGGED_IN_USER_NAME", "")
     private val LAST_LOGGED_IN_PASSWORD = Pair("LAST_LOGGED_IN_PASSWORD", "")
+    private val OFFLINE_CLICK_LIST = Pair("OFFLINE_CLICK_LIST", "")
+    private val OFFLINE_TEST_LIST = Pair("OFFLINE_TEST_LIST", "")
 
     fun init(context: Context) {
         preferences = context.getSharedPreferences(NAME, MODE)
@@ -47,6 +49,18 @@ object AppPreferences {
         operation(editor)
         editor.apply()
     }
+
+    var offlineClicks: String
+        get() = preferences.getString(OFFLINE_CLICK_LIST.first, OFFLINE_CLICK_LIST.second)!!
+        set(value) = preferences.edit {
+            it.putString(OFFLINE_CLICK_LIST.first, value)
+        }
+
+    var offlineTests: String
+        get() = preferences.getString(OFFLINE_TEST_LIST.first, OFFLINE_TEST_LIST.second)!!
+        set(value) = preferences.edit {
+            it.putString(OFFLINE_TEST_LIST.first, value)
+        }
 
     var lastLogin: String
         get() = preferences.getString(LAST_LOGGED_IN_USER_NAME.first, LAST_LOGGED_IN_USER_NAME.second)!!

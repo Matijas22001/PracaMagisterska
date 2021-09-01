@@ -1,8 +1,10 @@
 package pl.polsl.MathHelper.ui.mainActivity
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
@@ -164,8 +166,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         } else {
             //if(AppStatus.getInstance(this).isOnline) {
                 //clearAppData()
-                if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID =
-                    AppPreferences.chosenSectionId
+                if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
                 queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
                 if (textToSpeechSingleton?.isTTSready() == true) {
                     textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
@@ -680,14 +681,14 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
     fun login(userName:String) {
         val domain = "157.158.57.43"
         val authInfo = Factory.instance().createAuthInfo(userName, null, userName, null, null, domain, null)
-        val accountParams = App.core.createAccountParams()
+        val accountParams = core.createAccountParams()
         val identity = Factory.instance().createAddress("sip:$userName@$domain")
         accountParams.identityAddress = identity
         val address = Factory.instance().createAddress("sip:$domain")
         address?.transport = TransportType.Udp
         accountParams.serverAddress = address
         accountParams.registerEnabled = true
-        val account = App.core.createAccount(accountParams)
+        val account = core.createAccount(accountParams)
         core.addAuthInfo(authInfo)
         core.addAccount(account)
         core.defaultAccount = account
@@ -695,8 +696,11 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         account.addListener { _, state, message ->
             Log.i("[Account] Registration state changed: $state, $message")
         }
-        // Finally we need the Core to be started for the registration to happen (it could have been started before)
         core.start()
+        if (packageManager.checkPermission(Manifest.permission.RECORD_AUDIO, packageName) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 0)
+            return
+        }
     }
 
     private val coreListener = object: CoreListenerStub() {

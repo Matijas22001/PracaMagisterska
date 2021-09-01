@@ -1,6 +1,7 @@
 package pl.polsl.MathHelper
 
 import android.app.Application
+import android.content.Context
 import com.microsoft.signalr.HubConnection
 import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjector
@@ -13,6 +14,10 @@ import pl.polsl.MathHelper.utils.TextToSpeechSingleton
 import pl.polsl.MathHelper.view_binding.DaggerAppComponent
 import pl.polsl.MathHelper.view_binding.HawkWrapper
 import javax.inject.Inject
+import android.media.AudioManager
+
+
+
 
 
 class App : Application(), HasAndroidInjector {
@@ -29,10 +34,16 @@ class App : Application(), HasAndroidInjector {
     override fun onCreate() {
         super.onCreate()
         textToSpeechSingleton = TextToSpeechSingleton(this)
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        audioManager.isSpeakerphoneOn = true
         val factory = Factory.instance()
         factory.setDebugMode(true, "Hello Linphone")
         core = factory.createCore(null, null, this)
         AppPreferences.init(this)
+        core.isNativeRingingEnabled = true
+        core.ring = null
+        core.ringback = null
         HawkWrapper.init(applicationContext)
         Hawk.put("Is_Logged_In", false)
         Hawk.put("Is_In_Call",false)

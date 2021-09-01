@@ -39,7 +39,6 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     private lateinit var linearLayoutManager: LinearLayoutManager
     var queue: RequestQueue? = null
     var studentList: ArrayList<Student>? = null
-    var imageListToDownload: ArrayList<Int>? = null
     var userListAdapter: UserListAdapter? = null
     var chosenStudent: Student? = null
     private var currentlyChosenUserID: Int = 0
@@ -57,7 +56,6 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
 
     @Inject
     lateinit var presenter: UserListActivityPresenter
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,6 +104,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
             when (state) {
                 Call.State.StreamsRunning -> {
                     toggleSpeaker()
+                    Hawk.put("Is_In_Call",true)
                 }
             }
         }
@@ -150,16 +149,28 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
             object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
                 override fun onTick(millisUntilFinished: Long) {}
                 override fun onFinish() {
-                    when (clickCountBack) {
-                        1 -> textToSpeechSingleton?.speakSentence("Rozłącz z użytkownikiem")
-                        2 ->{
-                            textToSpeechSingleton?.speakSentence("Rozpoczynam próbę połączenia")
-                            val number = userListAdapter?.getItem(currentlyChosenUserID)?.voipNumber
-                            if(number!=null) outgoingCall(number)
-                            //signalRHelperClass?.EndSession()
+                    if(!Hawk.get<Boolean>("Is_In_Call")){
+                        when (clickCountBack) {
+                            1 -> textToSpeechSingleton?.speakSentence("Połącz z użytkownikiem")
+                            2 ->{
+                                textToSpeechSingleton?.speakSentence("Rozpoczynam próbę połączenia")
+                                val number = userListAdapter?.getItem(currentlyChosenUserID)?.voipNumber
+                                if(number!=null) outgoingCall(number)
+                            }
                         }
+                        clickCountBack = 0
+                    }else{
+                        when (clickCountBack) {
+                            1 -> textToSpeechSingleton?.speakSentence("Rozłącz z użytkownikiem")
+                            2 ->{
+                                textToSpeechSingleton?.speakSentence("Kończę obecną rozmowę")
+                                signalRHelperClass?.EndSession()
+                                hangUp()
+                                Hawk.put("Is_In_Call",false)
+                            }
+                        }
+                        clickCountBack = 0
                     }
-                    clickCountBack = 0
                 }
             }.start()
         }
@@ -241,10 +252,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                 override fun onFinish() {
                     when (clickCountTest) {
                         1 -> textToSpeechSingleton?.speakSentence(resources.getString(R.string.button_home_T))
-                        //2 -> textToSpeechSingleton?.speakSentence("Lista zalogowanych użytkowników")
-                        2 -> {
-                            hangUp()
-                        }
+                        2 -> textToSpeechSingleton?.speakSentence("Lista zalogowanych użytkowników")
                     }
                     clickCountTest = 0
                 }
@@ -254,12 +262,8 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
 
     private fun hangUp() {
         if (core.callsNb == 0) return
-
-        // If the call state isn't paused, we can get it using core.currentCall
         val call = if (core.currentCall != null) core.currentCall else core.calls[0]
         call ?: return
-
-        // Terminating a call is quite simple
         call.terminate()
     }
 
@@ -353,9 +357,6 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
     }
 
     override fun onClick(click: String) {
-        //runOnUiThread {
-        //    Toast.makeText(this, "Click $click", Toast.LENGTH_SHORT).show()
-        //}
         Log.i("","Click $click")
     }
 
