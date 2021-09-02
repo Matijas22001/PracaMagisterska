@@ -12,15 +12,8 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
-import butterknife.BindView
 import butterknife.ButterKnife
-import butterknife.OnClick
 import com.android.volley.RequestQueue
-import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
-import pl.polsl.MathHelper.R
-import pl.polsl.MathHelper.ui.answerActivity.AnswerActivity
-import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
-import pl.polsl.MathHelper.ui.testActivity.TestActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.orhanobut.hawk.Hawk
@@ -33,10 +26,14 @@ import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
 import org.linphone.core.*
 import pl.polsl.MathHelper.App
+import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
+import pl.polsl.MathHelper.R
 import pl.polsl.MathHelper.helper_data_containers.*
 import pl.polsl.MathHelper.model.*
-import pl.polsl.MathHelper.ui.mainActivity.MainActivity
+import pl.polsl.MathHelper.ui.answerActivity.AnswerActivity
+import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
+import pl.polsl.MathHelper.ui.testActivity.TestActivity
 import pl.polsl.MathHelper.utils.*
 import javax.inject.Inject
 
@@ -416,8 +413,12 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                 X = event.x.toLong()
                 Y = event.y.toLong()
                 Log.e("Kliknięto", "ID: $selectedId x $X y $Y")
-                sendClickDetails(X, Y, selectedId, svgImage?.svgId!!, test?.testId!!,1)
-                signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!, test?.testId!!,1).toString())
+                if(AppStatus.getInstance(applicationContext).isOnline){
+                    sendClickDetails(X, Y, selectedId, svgImage?.svgId!!, test?.testId!!,1)
+                    signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!, test?.testId!!,1).toString())
+                }else{
+                    addClickToSend(X, Y, selectedId, svgImage?.svgId!!, test?.testId!!,1)
+                }
             }
         }
         return super.dispatchTouchEvent(event)
@@ -451,8 +452,12 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
             val x = activity?.X
             val y = activity?.Y
             Log.e("Kliknięto", "ID: $content x $x y $y")
-            activity?.sendClickDetails(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!, activity?.clickCount!!)
-            activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!, activity?.clickCount!!).toString())
+            if(AppStatus.getInstance(activity?.applicationContext!!).isOnline){
+                activity?.sendClickDetails(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!, activity?.clickCount!!)
+                activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!, activity?.clickCount!!).toString())
+            }else{
+                activity?.addClickToSend(activity?.X, activity?.Y, content, activity?.svgImage?.svgId!!, activity?.test?.testId!!, activity?.clickCount!!)
+            }
             activity?.selectedId = content
             activity?.mCountDownTimer?.start()
         }
@@ -659,40 +664,55 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
     }
 
     private fun addTestToSend(){
-        val testArrayList: ArrayList<JSONObject>? = if(AppPreferences.offlineTests == ""){
+        val testArrayList: ArrayList<ChosenAnswersForTest>? = if(AppPreferences.offlineTests == ""){
             ArrayList()
         }else{
-            val testArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
-            Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineTests, testArrayListType)
+            val testArrayListType = object : TypeToken<ArrayList<ChosenAnswersForTest>>() {}.type
+            Gson().fromJson<ArrayList<ChosenAnswersForTest>>(AppPreferences.offlineTests, testArrayListType)
         }
-        if(createPOSTObject() != null){
-            testArrayList?.add(createPOSTObject()!!)
+        if(createTestObject() != null){
+            testArrayList?.add(createTestObject()!!)
             AppPreferences.offlineTests = Gson().toJson(testArrayList)
         }
     }
 
     private fun addClickToSend(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, type: Int){
-        val clickArrayList: ArrayList<JSONObject>? = if(AppPreferences.offlineClicks == ""){
+        val clickArrayList: ArrayList<Click>? = if(AppPreferences.offlineClicks == ""){
             ArrayList()
         }else{
-            val clickArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
-            Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineClicks, clickArrayListType)
+            val clickArrayListType = object : TypeToken<ArrayList<Click>>() {}.type
+            Gson().fromJson<ArrayList<Click>>(AppPreferences.offlineClicks, clickArrayListType)
         }
-        if(createPOSTObject(x, y, elementId, fileId, testId, type) != null){
-            clickArrayList?.add(createPOSTObject(x, y, elementId, fileId, testId, type)!!)
+        if(createClickObject(x, y, elementId, fileId, testId, type) != null){
+            clickArrayList?.add(createClickObject(x, y, elementId, fileId, testId, type)!!)
             AppPreferences.offlineClicks = Gson().toJson(clickArrayList)
         }
     }
 
-    private fun createPOSTObject(): JSONObject? {
+    private fun createTestObject(): ChosenAnswersForTest? {
         return try{
             val chosenAnswersForTest: ChosenAnswersForTest = Gson().fromJson(AppPreferences.answerList, ChosenAnswersForTest::class.java)
             chosenAnswersForTest.studentId = AppPreferences.chosenUser
             chosenAnswersForTest.startDate = Hawk.get("Test_start")
             chosenAnswersForTest.endDate = Hawk.get("Test_end")
-            val tempList: ArrayList<ChosenAnswersForTest> = ArrayList()
-            tempList.add(chosenAnswersForTest)
-            JSONObject(Gson().toJson(ChosenAnswersForTestList(tempList)))
+            return chosenAnswersForTest
+        }catch (e: Exception){
+            null
+        }
+    }
+
+    private fun createClickObject(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, type: Int): Click? {
+        return try{
+            val click = Click()
+            click.studentId = AppPreferences.chosenUser
+            click.fileId = fileId
+            click.x = x
+            click.y = y
+            click.elementId = elementId
+            click.testId = testId
+            click.timeStamp = getTime()
+            click.type = type
+            return click
         }catch (e: Exception){
             null
         }

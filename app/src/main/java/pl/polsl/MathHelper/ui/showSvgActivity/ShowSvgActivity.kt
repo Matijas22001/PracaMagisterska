@@ -30,6 +30,7 @@ import org.xml.sax.InputSource
 import pl.polsl.MathHelper.App
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
+import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForTest
 import pl.polsl.MathHelper.helper_data_containers.ImageIdTestsForImage
 import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
 import pl.polsl.MathHelper.model.*
@@ -342,8 +343,12 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
                     X = event.x.toLong()
                     Y = event.y.toLong()
                     Log.e("Kliknięto", "ID: $selectedId x $X y $Y")
-                    sendClickDetails(selectedId, X, Y , svgImage?.svgId!!, 1)
-                    signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!,1).toString())
+                    if(AppStatus.getInstance(applicationContext).isOnline){
+                        sendClickDetails(selectedId, X, Y , svgImage?.svgId!!, 1)
+                        signalRHelperClass?.SendClick(createPOSTObject(X, Y ,selectedId, svgImage?.svgId!!,1).toString())
+                    }else{
+                        addClickToSend(X, Y ,selectedId, svgImage?.svgId!!,1)
+                    }
                 }
             }
         return super.dispatchTouchEvent(event)
@@ -368,23 +373,40 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         }
     }
 
+    private fun addClickToSend(x: Long?, y: Long?, elementId: String, fileId: Int, type: Int){
+        val clickArrayList: ArrayList<Click>? = if(AppPreferences.offlineClicks == ""){
+            ArrayList()
+        }else{
+            val clickArrayListType = object : TypeToken<ArrayList<Click>>() {}.type
+            Gson().fromJson<ArrayList<Click>>(AppPreferences.offlineClicks, clickArrayListType)
+        }
+        if(createClickObject(x, y, elementId, fileId, type) != null){
+            clickArrayList?.add(createClickObject(x, y, elementId, fileId, type)!!)
+            AppPreferences.offlineClicks = Gson().toJson(clickArrayList)
+        }
+    }
+
+    private fun createClickObject(x: Long?, y: Long?, elementId: String, fileId: Int, type: Int): Click? {
+        return try{
+            val click = Click()
+            click.studentId = AppPreferences.chosenUser
+            click.fileId = fileId
+            click.x = x
+            click.y = y
+            click.elementId = elementId
+            click.timeStamp = getTime()
+            click.type = type
+            return click
+        }catch (e: Exception){
+            null
+        }
+    }
+
+
     fun getTime(): String {
         val dt = DateTime.now()
         val fmt: DateTimeFormatter = ISODateTimeFormat.dateTime()
         return fmt.print(dt)
-    }
-
-    private fun addClickToSend(x: Long?, y: Long?, elementId: String, fileId: Int, type: Int){
-        val clickArrayList: ArrayList<JSONObject>? = if(AppPreferences.offlineClicks == ""){
-            ArrayList()
-        }else{
-            val clickArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
-            Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineClicks, clickArrayListType)
-        }
-        if(createPOSTObject(x, y, elementId, fileId, type) != null){
-            clickArrayList?.add(createPOSTObject(x, y, elementId, fileId, type)!!)
-            AppPreferences.offlineClicks = Gson().toJson(clickArrayList)
-        }
     }
 
     class WebViewInterface(activity: ShowSvgActivity) {
@@ -396,8 +418,12 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
             val x = activity?.X
             val y = activity?.Y
             Log.e("Kliknięto", "ID: $content x $x y $y")
-            activity?.sendClickDetails(content, activity?.X, activity?.Y , activity?.svgImage?.svgId!!, activity?.clickCount!!)
-            activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y ,content, activity?.svgImage?.svgId!!, activity?.clickCount!!).toString())
+            if(AppStatus.getInstance(activity?.applicationContext!!).isOnline){
+                activity?.sendClickDetails(content, activity?.X, activity?.Y , activity?.svgImage?.svgId!!, activity?.clickCount!!)
+                activity?.signalRHelperClass?.SendClick(activity?.createPOSTObject(activity?.X, activity?.Y ,content, activity?.svgImage?.svgId!!, activity?.clickCount!!).toString())
+            }else{
+                activity?.addClickToSend(activity?.X, activity?.Y ,content, activity?.svgImage?.svgId!!, activity?.clickCount!!)
+            }
             activity?.selectedId = content
             activity?.mCountDownTimer?.start()
         }

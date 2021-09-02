@@ -6,5 +6,5 @@ import java.io.Serializable
 
 class OfflineClickList: Serializable {
     @SerializedName("offlineClickList")
-    var offlineClickList: ArrayList<JSONObject>? = null
+    var offlineClickList: ArrayList<Click>? = null
 }
