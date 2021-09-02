@@ -1,11 +1,20 @@
 package pl.polsl.MathHelper.ui.mainActivity
 
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
 import pl.polsl.MathHelper.model.*
 import com.google.gson.Gson
+import com.orhanobut.hawk.Hawk
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormatter
+import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
+import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForTest
+import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForTestList
+import pl.polsl.MathHelper.utils.AppPreferences
+import pl.polsl.MathHelper.utils.VolleyJsonRequest
 
 
 class MainActivityPresenter(private val view: MainActivityView?, private val navigator: MainActivityNavigator?){
@@ -120,5 +129,67 @@ class MainActivityPresenter(private val view: MainActivityView?, private val nav
             }
         }
         queue.add(jsonObjectRequest)
+    }
+
+    fun sendTestToServer(queue: RequestQueue, chosenAnswersForTest: ArrayList<ChosenAnswersForTest>, token: String){
+        val url = "http://157.158.57.124:50820/api/device/TestResults/SaveResults"
+        val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
+            Method.POST, url, createPOSTTestObject(chosenAnswersForTest),
+            Response.Listener { response ->
+                AppPreferences.answerList = ""
+                AppPreferences.offlineTests = ""
+            }, Response.ErrorListener { error ->
+                error.stackTrace
+            }) {
+            override fun getHeaders(): Map<String, String> {
+                val params: MutableMap<String, String> = HashMap()
+                params["Authorization"] = "Bearer $token"
+                return params
+            }
+        }
+        queue.add(jsonObjectRequest)
+    }
+
+    private fun createPOSTTestObject(chosenAnswersForTest: ArrayList<ChosenAnswersForTest>): JSONObject? {
+        return try{
+            val tempList: ArrayList<ChosenAnswersForTest> = ArrayList()
+            for(chosenAnswer in chosenAnswersForTest){
+                tempList.add(chosenAnswer)
+            }
+            JSONObject(Gson().toJson(ChosenAnswersForTestList(tempList)))
+        }catch (e: Exception){
+            null
+        }
+    }
+
+    fun sendImageClickDataToServer(queue: RequestQueue, clicks: ArrayList<Click>, token: String){
+        val url = "http://157.158.57.124:50820/api/MotionLog/SaveClicks"
+        val jsonObjectRequest: VolleyJsonRequest = object : VolleyJsonRequest(
+            Method.POST, url, createPOSTClickObject(clicks),
+            Response.Listener { response ->
+                Log.i("Click", "Saved")
+                AppPreferences.offlineClicks = ""
+            }, Response.ErrorListener { error ->
+                error.stackTrace
+            }) {
+            override fun getHeaders(): Map<String, String> {
+                val params: MutableMap<String, String> = HashMap()
+                params["Authorization"] = "Bearer $token"
+                return params
+            }
+        }
+        queue.add(jsonObjectRequest)
+    }
+
+    private fun createPOSTClickObject(clicks: ArrayList<Click>): JSONObject? {
+        return try{
+            val tempList: ArrayList<Click> = ArrayList()
+            for(click in clicks){
+                tempList.add(click)
+            }
+            JSONObject(Gson().toJson(ClickSendObject(tempList)))
+        }catch (e: Exception){
+            null
+        }
     }
 }

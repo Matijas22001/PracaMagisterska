@@ -35,12 +35,10 @@ import pl.polsl.MathHelper.App.Companion.core
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
 import pl.polsl.MathHelper.adapters.CustomAdapter
+import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForTest
 import pl.polsl.MathHelper.helper_data_containers.ImageIdTestsForImage
 import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
-import pl.polsl.MathHelper.model.LoginResponse
-import pl.polsl.MathHelper.model.SvgImage
-import pl.polsl.MathHelper.model.SvgImageDescription
-import pl.polsl.MathHelper.model.Tests
+import pl.polsl.MathHelper.model.*
 import pl.polsl.MathHelper.ui.chooseTaskActivity.ChooseTaskActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
@@ -164,29 +162,18 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 }
             }
         } else {
-            //if(AppStatus.getInstance(this).isOnline) {
-                //clearAppData()
-                if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
-                queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
-                if (textToSpeechSingleton?.isTTSready() == true) {
-                    textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
-                } else {
-                    val handler = Handler()
-                    handler.postDelayed({
-                        textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
-                    }, 1000)
-                }
-                displayLoginUsernamePrompt()
-                hideKeyboard(this)
-                initializeRecyclerView()
-            //}else{
-            //    val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
-            //    userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
-            //    val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
-            //    svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
-            //    inicializeList()
-            //    initializeRecyclerView()
-            //}
+            if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
+            queue = VolleySingleton.getInstance(this.applicationContext).requestQueue
+            if (textToSpeechSingleton?.isTTSready() == true) {
+                textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika")
+            } else {
+                val handler = Handler()
+                handler.postDelayed({
+                    textToSpeechSingleton?.speakSentenceWithoutDisturbing("Proszę podać nazwę użytkownika") }, 1000)
+            }
+            displayLoginUsernamePrompt()
+            hideKeyboard(this)
+            initializeRecyclerView()
         }
     }
 
@@ -221,6 +208,23 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 if(item == item1.svgId){
                     currentUserSvgImageList?.add(item1)
                 }
+            }
+        }
+    }
+
+    private fun readAndSendOfflineObjects(){
+        if(AppPreferences.offlineTests != ""){
+            val testArrayListType = object : TypeToken<ArrayList<ChosenAnswersForTest>>() {}.type
+            val testArrayList: ArrayList<ChosenAnswersForTest>? = Gson().fromJson<ArrayList<ChosenAnswersForTest>>(AppPreferences.offlineTests, testArrayListType)
+            if(testArrayList?.size!!>0){
+                presenter.sendTestToServer(queue!!, testArrayList, serverToken!!)
+            }
+        }
+        if(AppPreferences.offlineClicks != ""){
+            val clickArrayListType = object : TypeToken<ArrayList<Click>>() {}.type
+            val clickArrayList: ArrayList<Click>? = Gson().fromJson<ArrayList<Click>>(AppPreferences.offlineClicks, clickArrayListType)
+            if(clickArrayList?.size!!>0){
+                presenter.sendImageClickDataToServer(queue!!, clickArrayList, serverToken!!)
             }
         }
     }
@@ -650,6 +654,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                     Hawk.put("Student_phone_number", loginResponseSaved?.user?.voipNumber)
                     login(loginResponseSaved?.user?.voipNumber!!)
                 }
+                readAndSendOfflineObjects()
                 inicializeListRemote()
             }
 
