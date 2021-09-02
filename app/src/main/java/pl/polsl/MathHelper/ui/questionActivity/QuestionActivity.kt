@@ -18,7 +18,6 @@ import butterknife.OnClick
 import com.android.volley.RequestQueue
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
-import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForTest
 import pl.polsl.MathHelper.ui.answerActivity.AnswerActivity
 import pl.polsl.MathHelper.ui.settingsActivity.SettingsActivity
 import pl.polsl.MathHelper.ui.testActivity.TestActivity
@@ -34,9 +33,7 @@ import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
 import org.linphone.core.*
 import pl.polsl.MathHelper.App
-import pl.polsl.MathHelper.helper_data_containers.ChosenAnswersForQuestion
-import pl.polsl.MathHelper.helper_data_containers.ImageIdTestsForImage
-import pl.polsl.MathHelper.helper_data_containers.UserImageIdsPair
+import pl.polsl.MathHelper.helper_data_containers.*
 import pl.polsl.MathHelper.model.*
 import pl.polsl.MathHelper.ui.mainActivity.MainActivity
 import pl.polsl.MathHelper.ui.showSvgActivity.ShowSvgActivity
@@ -493,7 +490,6 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         account.addListener { _, state, message ->
             org.linphone.core.tools.Log.i("[Account] Registration state changed: $state, $message")
         }
-        // Finally we need the Core to be started for the registration to happen (it could have been started before)
         App.core.start()
     }
 
@@ -538,7 +534,11 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                             Hawk.put("Test_end", getTime())
                             textToSpeechSingleton?.speakSentence("Test został wysłany")
                             val serverToken = Hawk.get<String>("Server_Token")
-                            presenter.sendTestToServer(queue!!, serverToken)
+                            if(AppStatus.getInstance(applicationContext).isOnline){
+                                presenter.sendTestToServer(queue!!, serverToken)
+                            }else{
+                                addTestToSend()
+                            }
                             resetViewState()
                         }
                     }
@@ -569,7 +569,6 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         btn_next.isEnabled = false
         btn_previous.isEnabled = false
         btn_settings.isEnabled = false
-        //core.currentCall?.accept()
         btn_select.setOnClickListener {
             clickCountSelect++
             object : CountDownTimer(AppPreferences.tapInterval, AppPreferences.tapInterval) {
@@ -658,6 +657,47 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
             }.start()
         }
     }
+
+    private fun addTestToSend(){
+        val testArrayList: ArrayList<JSONObject>? = if(AppPreferences.offlineTests == ""){
+            ArrayList()
+        }else{
+            val testArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
+            Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineTests, testArrayListType)
+        }
+        if(createPOSTObject() != null){
+            testArrayList?.add(createPOSTObject()!!)
+            AppPreferences.offlineTests = Gson().toJson(testArrayList)
+        }
+    }
+
+    private fun addClickToSend(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, type: Int){
+        val clickArrayList: ArrayList<JSONObject>? = if(AppPreferences.offlineClicks == ""){
+            ArrayList()
+        }else{
+            val clickArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
+            Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineClicks, clickArrayListType)
+        }
+        if(createPOSTObject() != null){
+            clickArrayList?.add(createPOSTObject(x, y, elementId, fileId, testId, type)!!)
+            AppPreferences.offlineClicks = Gson().toJson(clickArrayList)
+        }
+    }
+
+    private fun createPOSTObject(): JSONObject? {
+        return try{
+            val chosenAnswersForTest: ChosenAnswersForTest = Gson().fromJson(AppPreferences.answerList, ChosenAnswersForTest::class.java)
+            chosenAnswersForTest.studentId = AppPreferences.chosenUser
+            chosenAnswersForTest.startDate = Hawk.get("Test_start")
+            chosenAnswersForTest.endDate = Hawk.get("Test_end")
+            val tempList: ArrayList<ChosenAnswersForTest> = ArrayList()
+            tempList.add(chosenAnswersForTest)
+            JSONObject(Gson().toJson(ChosenAnswersForTestList(tempList)))
+        }catch (e: Exception){
+            null
+        }
+    }
+
 
     override fun onSessionStart() {
         Log.i("","SessionStarted")
