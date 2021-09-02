@@ -678,7 +678,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
             val clickArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
             Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineClicks, clickArrayListType)
         }
-        if(createPOSTObject() != null){
+        if(createPOSTObject(x, y, elementId, fileId, testId, type) != null){
             clickArrayList?.add(createPOSTObject(x, y, elementId, fileId, testId, type)!!)
             AppPreferences.offlineClicks = Gson().toJson(clickArrayList)
         }
@@ -723,13 +723,11 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                 val y = clickResponse.click?.get(0)?.y
                 val elementId = clickResponse.click?.get(0)?.elementId
                 if(elementId != null && elementId != ""){
-                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
                     textToSpeechSingleton?.speakSentence("Uczeń kliknął element o id $elementId")
                     val circleView: View = CircleGreen(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
                     wv_image_show_svg.addView(circleView)
                     viewsList?.add(circleView)
                 }else{
-                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
                     val circleView: View = CircleRed(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
                     wv_image_show_svg.addView(circleView)
                     viewsList?.add(circleView)

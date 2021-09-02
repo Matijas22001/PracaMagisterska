@@ -422,6 +422,19 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
         }
     }
 
+    private fun addClickToSend(x: Long?, y: Long?, elementId: String, fileId: Int, type: Int){
+        val clickArrayList: ArrayList<JSONObject>? = if(AppPreferences.offlineClicks == ""){
+            ArrayList()
+        }else{
+            val clickArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
+            Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineClicks, clickArrayListType)
+        }
+        if(createPOSTObject(x, y, elementId, fileId, type) != null){
+            clickArrayList?.add(createPOSTObject(x, y, elementId, fileId, type)!!)
+            AppPreferences.offlineClicks = Gson().toJson(clickArrayList)
+        }
+    }
+
     class WebViewInterface {
         var activity: TestActivity? = null
 
@@ -616,13 +629,11 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
                 val y = clickResponse.click?.get(0)?.y
                 val elementId = clickResponse.click?.get(0)?.elementId
                 if(elementId != null && elementId != ""){
-                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
                     textToSpeechSingleton?.speakSentence("Uczeń kliknął element o id $elementId")
                     val circleView: View = CircleGreen(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
                     wv_image_show_svg.addView(circleView)
                     viewsList?.add(circleView)
                 }else{
-                    //Toast.makeText(this, "Click x $x y $y", Toast.LENGTH_SHORT).show()
                     val circleView: View = CircleRed(this, null, x?.toFloat()!!, y?.toFloat()!!, 10F)
                     wv_image_show_svg.addView(circleView)
                     viewsList?.add(circleView)
@@ -638,7 +649,6 @@ class TestActivity: AppCompatActivity(), TestActivityNavigator, TestActivityView
                 AppPreferences.chosenTask = Gson().toJson(getCurrentTask(imageId))
                 AppPreferences.chosenTaskDescription = Gson().toJson(getCurrentTaskDescription(imageId))
                 AppPreferences.chosenTaskTests = Gson().toJson(getCurrentTaskTests(imageId))
-                //AppPreferences.chosenTaskId = currentlyChosenTaskID
                 Hawk.put("Is_task_from_teacher", true)
                 val myIntent = Intent(this@TestActivity, ShowSvgActivity::class.java)
                 this@TestActivity.startActivity(myIntent)

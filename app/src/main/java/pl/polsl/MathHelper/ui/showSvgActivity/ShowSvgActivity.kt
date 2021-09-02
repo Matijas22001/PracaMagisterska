@@ -374,6 +374,19 @@ class ShowSvgActivity: AppCompatActivity(), ShowSvgActivityView,ShowSvgActivityN
         return fmt.print(dt)
     }
 
+    private fun addClickToSend(x: Long?, y: Long?, elementId: String, fileId: Int, type: Int){
+        val clickArrayList: ArrayList<JSONObject>? = if(AppPreferences.offlineClicks == ""){
+            ArrayList()
+        }else{
+            val clickArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
+            Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineClicks, clickArrayListType)
+        }
+        if(createPOSTObject(x, y, elementId, fileId, type) != null){
+            clickArrayList?.add(createPOSTObject(x, y, elementId, fileId, type)!!)
+            AppPreferences.offlineClicks = Gson().toJson(clickArrayList)
+        }
+    }
+
     class WebViewInterface(activity: ShowSvgActivity) {
         var activity: ShowSvgActivity? = activity
 

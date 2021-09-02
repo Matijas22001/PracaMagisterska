@@ -511,6 +511,21 @@ class AnswerActivity: AppCompatActivity(), AnswerActivityNavigator, AnswerActivi
         return fmt.print(dt)
     }
 
+
+    private fun addClickToSend(x: Long?, y: Long?, elementId: String, fileId: Int, testId: Int, questionId: Int, type: Int){
+        val clickArrayList: ArrayList<JSONObject>? = if(AppPreferences.offlineClicks == ""){
+            ArrayList()
+        }else{
+            val clickArrayListType = object : TypeToken<ArrayList<JSONObject>>() {}.type
+            Gson().fromJson<ArrayList<JSONObject>>(AppPreferences.offlineClicks, clickArrayListType)
+        }
+        if(createPOSTObject(x, y, elementId, fileId, testId, questionId, type) != null){
+            clickArrayList?.add(createPOSTObject(x, y, elementId, fileId, testId, questionId, type)!!)
+            AppPreferences.offlineClicks = Gson().toJson(clickArrayList)
+        }
+    }
+
+
     class WebViewInterface {
         var activity: AnswerActivity? = null
 
