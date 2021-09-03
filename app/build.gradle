@@ -14,8 +14,8 @@ android {
         applicationId "pl.polsl.MathHelper"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 12
-        versionName "1.9.1"
+        versionCode 13
+        versionName "1.9.2"
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
