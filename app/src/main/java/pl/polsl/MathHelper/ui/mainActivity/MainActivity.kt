@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
@@ -578,7 +579,6 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 finish()
             }
         }
-        //presenter.getUserImageIdsFromServer(queue!!, 1, loginResponse.token!!)
     }
 
     override fun userLoggedInFailedLogic() {
@@ -724,7 +724,16 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
         ) {
             when (state) {
                 Call.State.IncomingReceived -> {
+                    textToSpeechSingleton?.speakSentence("Połączenie przychodzące wciśnij przycisk wybierz aby odebrać lub cofnij aby odrzucić")
                     reactToCall()
+                }
+                Call.State.Released -> {
+                    //if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.Q){
+                        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audioManager.mode = AudioManager.MODE_NORMAL
+                        audioManager.isSpeakerphoneOn = false
+                    //}
+                    Hawk.put("Is_In_Call",false)
                 }
             }
         }
@@ -935,6 +944,10 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                         1 -> textToSpeechSingleton?.speakSentence("Odbierz")
                         2 -> {
                             core.currentCall?.accept()
+                            core.currentCall?.startRecording()
+                            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                            audioManager.isSpeakerphoneOn = true
                             toggleSpeaker()
                             Hawk.put("Is_In_Call",true)
                             resetViewState()

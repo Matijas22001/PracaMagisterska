@@ -1,7 +1,9 @@
 package pl.polsl.MathHelper.ui.questionActivity
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Base64
@@ -26,6 +28,7 @@ import org.joda.time.format.ISODateTimeFormat
 import org.json.JSONObject
 import org.linphone.core.*
 import pl.polsl.MathHelper.App
+import pl.polsl.MathHelper.App.Companion.core
 import pl.polsl.MathHelper.App.Companion.textToSpeechSingleton
 import pl.polsl.MathHelper.R
 import pl.polsl.MathHelper.helper_data_containers.*
@@ -165,19 +168,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                 e.printStackTrace()
             }
         }
-        if(!Hawk.get<Boolean>("Is_In_Call")){
-            var phoneNumber: String? = null
-            if (AppPreferences.appMode == 2){
-                if(Hawk.contains("Teacher_phone_number")){
-                    phoneNumber = Hawk.get<String>("Teacher_phone_number")
-                }
-            } else{
-                if(Hawk.contains("Student_phone_number")) {
-                    phoneNumber = Hawk.get<String>("Student_phone_number")
-                }
-            }
-            if(phoneNumber!= null)login(phoneNumber)
-        }
+        core.addListener(coreListener)
     }
 
     private fun inicializeListRemote() {
@@ -477,26 +468,6 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         }
     }
 
-    fun login(userName:String) {
-        val domain = "157.158.57.43"
-        val authInfo = Factory.instance().createAuthInfo(userName, null, userName, null, null, domain, null)
-        val accountParams = App.core.createAccountParams()
-        val identity = Factory.instance().createAddress("sip:$userName@$domain")
-        accountParams.identityAddress = identity
-        val address = Factory.instance().createAddress("sip:$domain")
-        address?.transport = TransportType.Udp
-        accountParams.serverAddress = address
-        accountParams.registerEnabled = true
-        val account = App.core.createAccount(accountParams)
-        App.core.addAuthInfo(authInfo)
-        App.core.addAccount(account)
-        App.core.defaultAccount = account
-        App.core.addListener(coreListener)
-        account.addListener { _, state, message ->
-            org.linphone.core.tools.Log.i("[Account] Registration state changed: $state, $message")
-        }
-        App.core.start()
-    }
 
     private val coreListener = object: CoreListenerStub() {
         override fun onAccountRegistrationStateChanged(core: Core, account: Account, state: RegistrationState?, message: String) {
@@ -515,7 +486,16 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
         ) {
             when (state) {
                 Call.State.IncomingReceived -> {
+                    textToSpeechSingleton?.speakSentence("Połączenie przychodzące wciśnij przycisk wybierz aby odebrać lub cofnij aby odrzucić")
                     reactToCall()
+                }
+                Call.State.Released -> {
+                    if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.Q){
+                        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audioManager.mode = AudioManager.MODE_NORMAL
+                        audioManager.isSpeakerphoneOn = false
+                    }
+                    Hawk.put("Is_In_Call",false)
                 }
             }
         }
@@ -582,7 +562,12 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                     when (clickCountSelect) {
                         1 -> textToSpeechSingleton?.speakSentence("Odbierz")
                         2 -> {
-                            App.core.currentCall?.accept()
+                            core.currentCall?.accept()
+                            core.currentCall?.startRecording()
+                            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                            audioManager.isSpeakerphoneOn = true
+                            toggleSpeaker()
                             Hawk.put("Is_In_Call",true)
                             resetViewState()
                         }
@@ -599,7 +584,7 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                     when (clickCountBack) {
                         1 -> textToSpeechSingleton?.speakSentence("Odrzuć")
                         2 -> {
-                            App.core.currentCall?.decline(Reason.Declined)
+                            core.currentCall?.decline(Reason.Declined)
                             Hawk.put("Is_In_Call",false)
                             resetViewState()
                         }
@@ -607,6 +592,15 @@ class QuestionActivity: AppCompatActivity(), QuestionActivityNavigator, Question
                     clickCountBack = 0
                 }
             }.start()
+        }
+    }
+
+    private fun toggleSpeaker() {
+        for (audioDevice in core.audioDevices) {
+            if (audioDevice.type == AudioDevice.Type.Speaker) {
+                core.currentCall?.outputAudioDevice = audioDevice
+                return
+            }
         }
     }
 

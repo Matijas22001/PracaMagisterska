@@ -34,9 +34,6 @@ class App : Application(), HasAndroidInjector {
     override fun onCreate() {
         super.onCreate()
         textToSpeechSingleton = TextToSpeechSingleton(this)
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-        audioManager.isSpeakerphoneOn = true
         val factory = Factory.instance()
         factory.setDebugMode(true, "Hello Linphone")
         core = factory.createCore(null, null, this)

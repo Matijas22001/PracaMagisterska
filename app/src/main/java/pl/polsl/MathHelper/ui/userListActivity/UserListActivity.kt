@@ -1,8 +1,10 @@
 package pl.polsl.MathHelper.ui.userListActivity
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.widget.TextView
@@ -100,11 +102,22 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
             state: Call.State?,
             message: String
         ) {
-            findViewById<TextView>(R.id.tvStatus).text = state?.name.toString()
             when (state) {
                 Call.State.StreamsRunning -> {
                     toggleSpeaker()
+                    val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                    audioManager.isSpeakerphoneOn = true
                     Hawk.put("Is_In_Call",true)
+                }
+                Call.State.Released -> {
+                    textToSpeechSingleton?.speakSentence("Połączenie zostało zakończone")
+                    if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.Q){
+                        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audioManager.mode = AudioManager.MODE_NORMAL
+                        audioManager.isSpeakerphoneOn = false
+                    }
+                    Hawk.put("Is_In_Call",false)
                 }
             }
         }
@@ -153,7 +166,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                         when (clickCountBack) {
                             1 -> textToSpeechSingleton?.speakSentence("Połącz z użytkownikiem")
                             2 ->{
-                                textToSpeechSingleton?.speakSentence("Rozpoczynam próbę połączenia")
+                                textToSpeechSingleton?.speakSentence("Rozpoczynam połączenie")
                                 val number = userListAdapter?.getItem(currentlyChosenUserID)?.voipNumber
                                 if(number!=null) outgoingCall(number)
                             }
@@ -208,7 +221,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
                 override fun onTick(millisUntilFinished: Long) {}
                 override fun onFinish() {
                     when (clickCountSelect) {
-                        1 -> textToSpeechSingleton?.speakSentence("Połącz z użytkownikiem")
+                        1 -> textToSpeechSingleton?.speakSentence("Rozpocznij sesje z użytkownikiem")
                         2 -> {
                             val id = userListAdapter?.getItem(currentlyChosenUserID)?.id
                             signalRHelperClass?.StartSession(id!!)
@@ -264,6 +277,7 @@ class UserListActivity : AppCompatActivity(), UserListActivityView, UserListActi
         if (core.callsNb == 0) return
         val call = if (core.currentCall != null) core.currentCall else core.calls[0]
         call ?: return
+        call.stopRecording()
         call.terminate()
     }
 
