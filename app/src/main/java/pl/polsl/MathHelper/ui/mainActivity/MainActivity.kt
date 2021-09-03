@@ -148,19 +148,20 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                 presenter.getUserImageIdsFromServer(queue!!, currentRemoteStudentId!!, token)
                 initializeRecyclerView()
             } else {
-                if(AppStatus.getInstance(this).isOnline){
-                    textToSpeechSingleton?.speakSentence("Pobieranie danych, proszę czekać")
-                    val token = Hawk.get<String>("Server_Token")
-                    serverToken = token
-                    presenter.getUserImageIdsFromServer(queue!!, AppPreferences.chosenUser, token)
-                    initializeRecyclerView()
-                }else{
+                //if(AppStatus.getInstance(this).isOnline){
+                //    textToSpeechSingleton?.speakSentence("Pobieranie danych, proszę czekać")
+                //    val token = Hawk.get<String>("Server_Token")
+                //    serverToken = token
+                //    presenter.getUserImageIdsFromServer(queue!!, AppPreferences.chosenUser, token)
+                //    initializeRecyclerView()
+                //}else{
                     val userImageIdsPairType = object : TypeToken<List<UserImageIdsPair>>() {}.type
                     userImagesIdsPairList = Gson().fromJson<ArrayList<UserImageIdsPair>>(AppPreferences.userIdImageIdList, userImageIdsPairType)
                     val svgImageType = object : TypeToken<List<SvgImage>>() {}.type
                     svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
                     initializeRecyclerView()
-                }
+                    updateRecyclerView()
+                //}
             }
         } else {
             if (AppPreferences.chosenSectionId != -1) currentlyChosenSectionID = AppPreferences.chosenSectionId
@@ -329,6 +330,7 @@ class MainActivity : AppCompatActivity(), MainActivityView, MainActivityNavigato
                         svgImageList = Gson().fromJson<ArrayList<SvgImage>>(AppPreferences.imageList, svgImageType)
                         inicializeList()
                         initializeRecyclerView()
+                        updateRecyclerView()
                     } else {
                         textToSpeechSingleton?.speakSentence("Podane dane nie są zgodne z ostatnim użytkownikiem, tryb offline nie jest dostepny")
                     }
